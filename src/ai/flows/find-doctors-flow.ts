@@ -63,7 +63,7 @@ const findDoctorsPrompt = ai.definePrompt({
   input: {schema: FindDoctorsInputSchema},
   output: {schema: LLMPromptOutputSchema}, // Use the more lenient schema for LLM's direct output
   prompt: `You are an assistant that helps users find doctors by generating plausible, illustrative examples.
-Based on the provided location: {{{location}}}{{#if specialty}}} and specialty: {{{specialty}}}{{/if}}, generate a list of 3 to 5 plausible doctor names (or clinic names), their specialties, full addresses, and phone numbers (if you can make one up).
+Based on the provided location: {{{location}}}{{#if specialty}} and specialty: {{{specialty}}}{{/if}}, generate a list of 3 to 5 plausible doctor names (or clinic names), their specialties, full addresses, and phone numbers (if you can make one up).
 If no specialty is provided, suggest general practitioners or a mix of common specialties.
 The generated data should look realistic but is not real.
 Ensure the addresses appear reasonable for a general urban or suburban area.
