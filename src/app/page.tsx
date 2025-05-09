@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useFormState } from 'react-dom';
+import React, { useState, useEffect, useActionState } from 'react';
 import AppHeader from '@/components/medi-seek/AppHeader';
 import AppFooter from '@/components/medi-seek/AppFooter';
 import SymptomForm from '@/components/medi-seek/SymptomForm';
@@ -17,7 +16,7 @@ const initialState: FormState = {
 };
 
 export default function HomePage() {
-  const [state, formAction] = useFormState(handleSymptomAnalysis, initialState);
+  const [state, formAction] = useActionState(handleSymptomAnalysis, initialState);
   const [showResults, setShowResults] = useState(false);
   const [key, setKey] = useState(Date.now()); // Key for SymptomForm to reset on successful submission
 
