@@ -63,12 +63,28 @@ const findDoctorsFlow = ai.defineFlow(
     inputSchema: FindDoctorsInputSchema,
     outputSchema: FindDoctorsOutputSchema,
   },
-  async (input: FindDoctorsInput) => {
-    const {output} = await findDoctorsPrompt(input);
-     // Ensure searchedSpecialty is included in the output even if input.specialty was undefined
+  async (input: FindDoctorsInput): Promise<FindDoctorsOutput> => {
+    const { output: promptOutput } = await findDoctorsPrompt(input);
+
+    if (!promptOutput) {
+      console.error(
+        'AI model failed to generate valid doctor information matching the expected schema. Input:',
+        input
+      );
+      throw new Error(
+        'The AI model could not generate doctor information based on your request. Please try rephrasing or try again later.'
+      );
+    }
+
+    // If promptOutput is not null, it has been validated against FindDoctorsOutputSchema by Genkit.
+    // It should contain `doctors`, `disclaimer`.
+    // `searchedLocation` and `searchedSpecialty` should also be there if the LLM followed the prompt,
+    // but we will use the direct input values for these fields in the final output for robustness.
     return {
-        ...output!,
-        searchedSpecialty: input.specialty || undefined,
+      doctors: promptOutput.doctors,
+      disclaimer: promptOutput.disclaimer,
+      searchedLocation: input.location, // Use the original input for accuracy
+      searchedSpecialty: input.specialty || undefined, // Use the original input, ensuring undefined if not provided
     };
   }
 );
