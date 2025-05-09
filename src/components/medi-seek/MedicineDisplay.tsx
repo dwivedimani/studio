@@ -26,12 +26,13 @@ export default function MedicineDisplay({ analysis }: MedicineDisplayProps) {
             Suggested Over-the-Counter Medicines
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            The following are generic suggestions based on the symptoms you provided. This is not a diagnosis or medical advice. Always consult with a healthcare professional or pharmacist before taking any new medication or if your symptoms persist or worsen.
+            The following are generic suggestions based on the symptoms you provided. This is not a diagnosis or medical advice. Always consult with a healthcare professional or pharmacist before taking any new medication, read product labels carefully, and follow recommended dosages. If your symptoms persist or worsen, seek medical attention.
           </p>
           <ul className="space-y-3">
             {analysis.suggestedMedicines.map((medicine, index) => (
               <li key={index} className="p-4 bg-card border border-border rounded-lg shadow-sm text-foreground hover:shadow-md transition-shadow">
-                {medicine}
+                <p className="font-semibold text-primary-foreground">{medicine.name}</p>
+                <p className="text-sm text-muted-foreground mt-1">Suggested Dosage: <span className="text-foreground">{medicine.dosage}</span></p>
               </li>
             ))}
           </ul>
