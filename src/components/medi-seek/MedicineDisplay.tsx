@@ -1,6 +1,6 @@
 import React from 'react';
 import type { AnalyzeSymptomsOutput } from '@/ai/flows/analyze-symptoms';
-import { AlertTriangle, Pill, Info } from 'lucide-react';
+import { AlertTriangle, Pill, Info, UserCheck } from 'lucide-react'; // Added UserCheck for specialty
 
 interface MedicineDisplayProps {
   analysis: AnalyzeSymptomsOutput;
@@ -18,6 +18,21 @@ export default function MedicineDisplay({ analysis }: MedicineDisplayProps) {
           </div>
         </div>
       </div>
+
+      {analysis.suggestedSpecialty && (
+        <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg shadow-sm">
+           <h3 className="text-lg font-semibold text-primary-foreground mb-2 flex items-center">
+            <UserCheck className="h-5 w-5 mr-2 text-primary" />
+            Suggested Medical Specialty
+          </h3>
+          <p className="text-sm text-foreground">
+            Based on the symptoms, you might consider consulting a specialist in: <strong className="text-primary-foreground">{analysis.suggestedSpecialty}</strong>.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            This is an AI-generated suggestion for informational purposes. A General Practitioner can also provide guidance and referrals.
+          </p>
+        </div>
+      )}
 
       {analysis.suggestedMedicines && analysis.suggestedMedicines.length > 0 ? (
         <div>

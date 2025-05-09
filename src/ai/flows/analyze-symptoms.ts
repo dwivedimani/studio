@@ -1,9 +1,9 @@
 // 'use server';
 
 /**
- * @fileOverview Analyzes user-provided symptoms and suggests potential over-the-counter medicines with dosages for informational purposes only.
+ * @fileOverview Analyzes user-provided symptoms and suggests potential over-the-counter medicines with dosages and a relevant medical specialty for informational purposes only.
  *
- * - analyzeSymptoms - A function that takes user-reported symptoms and returns a list of suggested medicines with dosages.
+ * - analyzeSymptoms - A function that takes user-reported symptoms and returns a list of suggested medicines, dosages, and a suggested specialty.
  * - AnalyzeSymptomsInput - The input type for the analyzeSymptoms function.
  * - AnalyzeSymptomsOutput - The return type for the analyzeSymptoms function.
  */
@@ -35,6 +35,10 @@ const AnalyzeSymptomsOutputSchema = z.object({
     .describe(
       'A disclaimer stating that the suggestions are for informational purposes only and not a substitute for professional medical advice.'
     ),
+  suggestedSpecialty: z
+    .string()
+    .optional()
+    .describe('A general medical specialty that might be relevant for the symptoms or suggested medicines (e.g., "General Practitioner", "Dermatologist", "Allergist"). This is an AI-generated suggestion and might not always be provided.'),
 });
 
 export type AnalyzeSymptomsOutput = z.infer<typeof AnalyzeSymptomsOutputSchema>;
@@ -47,14 +51,19 @@ const analyzeSymptomsPrompt = ai.definePrompt({
   name: 'analyzeSymptomsPrompt',
   input: {schema: AnalyzeSymptomsInputSchema},
   output: {schema: AnalyzeSymptomsOutputSchema},
-  prompt: `You are a helpful assistant that analyzes a user's symptoms and suggests potential over-the-counter medicines, including general dosage information, for informational purposes only. Do not provide medical advice.
+  prompt: `You are a helpful assistant that analyzes a user's symptoms. Based on these symptoms, you will:
+1. Suggest potential over-the-counter medicines, including general dosage information.
+2. Suggest a general medical specialty that a person might consider consulting for such symptoms (e.g., "General Practitioner", "Dermatologist", "Pulmonologist"). If the symptoms are very generic or don't clearly point to a specialty, you can omit this or suggest "General Practitioner".
+3. Provide a disclaimer.
 
-  Symptoms: {{{symptoms}}}
+Symptoms: {{{symptoms}}}
 
-  Please provide a list of suggested medicines, each with a 'name' and a 'dosage' (e.g., '1-2 tablets every 4-6 hours as needed, do not exceed 8 tablets in 24 hours').
-  Also include a disclaimer that these suggestions are for informational purposes only and not a substitute for professional medical advice. Emphasize that dosages are general and users should always read product labels and consult a healthcare professional.
+Please provide:
+- A list of suggested medicines, each with a 'name' and a 'dosage'.
+- A 'suggestedSpecialty' if applicable.
+- A 'disclaimer' stating that these suggestions are for informational purposes only, not a substitute for professional medical advice, dosages are general, and users should read labels and consult a healthcare professional.
 
-  Format your response as a JSON object with "suggestedMedicines" (an array of objects, each with "name" and "dosage") and "disclaimer" fields.
+Format your response as a JSON object according to the output schema.
   `,
 });
 
@@ -69,3 +78,4 @@ const analyzeSymptomsFlow = ai.defineFlow(
     return output!;
   }
 );
+

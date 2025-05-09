@@ -19,17 +19,21 @@ export default function HomePage() {
   const [state, formAction] = useActionState(handleSymptomAnalysis, initialState);
   const [showResults, setShowResults] = useState(false);
   const [key, setKey] = useState(Date.now()); // Key for SymptomForm to reset on successful submission
+  const [suggestedSpecialty, setSuggestedSpecialty] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     // Only show results if there's new analysis or errors from the latest submission
-    if (state.timestamp !== initialState.timestamp) { // Compare against initial timestamp or previous timestamp
+    if (state.timestamp !== initialState.timestamp) { 
         setShowResults(true);
         if (state.analysis) {
             // Reset form by changing key, which forces remount
             setKey(Date.now());
+            setSuggestedSpecialty(state.analysis.suggestedSpecialty);
+        } else {
+            setSuggestedSpecialty(undefined); // Clear specialty if analysis fails or no specialty suggested
         }
     }
-  }, [state.timestamp]); // Depend on timestamp to detect new submissions
+  }, [state.timestamp, state.analysis]);
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary/30">
@@ -45,7 +49,7 @@ export default function HomePage() {
                   <div>
                     <CardTitle className="text-2xl sm:text-3xl font-semibold">Symptom Analyzer</CardTitle>
                     <CardDescription className="text-sm sm:text-base text-muted-foreground mt-1">
-                      Describe your symptoms below. Our AI will provide informational suggestions for over-the-counter medicines.
+                      Describe your symptoms below. Our AI will provide informational suggestions for over-the-counter medicines and a relevant medical specialty.
                     </CardDescription>
                   </div>
                 </div>
@@ -91,7 +95,7 @@ export default function HomePage() {
 
           {/* Right Column / Sidebar: Nearby Services */}
           <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-28"> {/* Sticky for desktop */}
-            <NearbyServices />
+            <NearbyServices suggestedSpecialty={suggestedSpecialty} />
           </div>
         </div>
       </main>

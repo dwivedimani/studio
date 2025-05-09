@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState, useRef } from 'react';
+import React, { useActionState, useRef, useState, useEffect } from 'react';
 import type { FindPharmaciesFormState, FindDoctorsFormState } from '@/lib/actions';
 import { handleFindPharmacies, handleFindDoctors } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
@@ -8,10 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { MapPin, Stethoscope, Search, Loader2, AlertTriangle, Phone, Clock, Building } from 'lucide-react';
+import { MapPin, Stethoscope, Search, Loader2, AlertTriangle, Phone, Clock, Building, AlertCircle } from 'lucide-react'; // Added AlertCircle
 
 const initialPharmaciesState: FindPharmaciesFormState = { message: '', timestamp: 0 };
 const initialDoctorsState: FindDoctorsFormState = { message: '', timestamp: 0 };
+
+interface NearbyServicesProps {
+  suggestedSpecialty?: string;
+}
 
 function SubmitButton({ pending, text }: { pending: boolean, text: string }) {
   return (
@@ -22,24 +26,44 @@ function SubmitButton({ pending, text }: { pending: boolean, text: string }) {
   );
 }
 
-export default function NearbyServices() {
+export default function NearbyServices({ suggestedSpecialty }: NearbyServicesProps) {
   const [pharmaciesState, pharmaciesFormAction, pharmacyPending] = useActionState(handleFindPharmacies, initialPharmaciesState);
   const [doctorsState, doctorsFormAction, doctorPending] = useActionState(handleFindDoctors, initialDoctorsState);
 
   const pharmacyFormRef = useRef<HTMLFormElement>(null);
   const doctorFormRef = useRef<HTMLFormElement>(null);
+
+  const [doctorSpecialtyValue, setDoctorSpecialtyValue] = useState('');
+
+  useEffect(() => {
+    if (suggestedSpecialty) {
+      setDoctorSpecialtyValue(suggestedSpecialty);
+    }
+    // If suggestedSpecialty becomes undefined (e.g. after a new symptom analysis without a specialty),
+    // we might want to clear it or let the user manage the field.
+    // For now, it only sets if a new specialty is suggested.
+  }, [suggestedSpecialty]);
   
   React.useEffect(() => {
-    if (pharmaciesState.data) {
+    if (pharmaciesState.data || pharmaciesState.errors) { // Reset on data or error to clear previous results
         pharmacyFormRef.current?.reset();
     }
-  }, [pharmaciesState.data]);
+  }, [pharmaciesState.timestamp]); // Use timestamp to detect new submission
 
   React.useEffect(() => {
-    if (doctorsState.data) {
-        doctorFormRef.current?.reset();
+    if (doctorsState.data || doctorsState.errors) { // Reset on data or error
+        // doctorFormRef.current?.reset(); // This would clear the pre-filled specialty too early
+        // Instead, clear only location if needed, or rely on user to clear.
+        // For now, let's not reset the doctor form fields automatically to preserve pre-fill.
+        // If a successful search happens and new data is available, the specialty might have been used.
+        if (doctorsState.data) {
+          // Potentially clear location:
+          // if (doctorFormRef.current) {
+          //  (doctorFormRef.current.elements.namedItem('location') as HTMLInputElement).value = '';
+          // }
+        }
     }
-  }, [doctorsState.data]);
+  }, [doctorsState.timestamp]); // Use timestamp
 
 
   return (
@@ -120,7 +144,7 @@ export default function NearbyServices() {
             Find Doctors (Illustrative)
           </CardTitle>
           <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
-            Enter location &amp; optionally specialty for AI-generated doctor examples. For demonstration only.
+            Enter location &amp; optionally specialty. Specialty may be pre-filled based on symptom analysis. For demonstration only.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
@@ -148,6 +172,8 @@ export default function NearbyServices() {
                 name="specialty"
                 placeholder="e.g., Pediatrician, Cardiologist"
                 className="mt-1"
+                value={doctorSpecialtyValue}
+                onChange={(e) => setDoctorSpecialtyValue(e.target.value)}
               />
                {doctorsState.errors?.specialty && (
                  <Alert variant="destructive" className="mt-2 text-xs">

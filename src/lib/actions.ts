@@ -11,7 +11,7 @@ const SymptomSchema = z.object({
 
 export interface FormState {
   message: string;
-  analysis?: AnalyzeSymptomsOutput;
+  analysis?: AnalyzeSymptomsOutput; // This includes suggestedMedicines, disclaimer, and potentially suggestedSpecialty
   errors?: {
     symptoms?: string[];
     _form?: string[]; 
@@ -40,9 +40,10 @@ export async function handleSymptomAnalysis(
   try {
     const input: AnalyzeSymptomsInput = { symptoms: validatedFields.data.symptoms };
     const result = await analyzeSymptoms(input);
+    // result now contains analysis.suggestedSpecialty if provided by the AI
     return {
       message: 'Symptoms analyzed successfully.',
-      analysis: result,
+      analysis: result, 
       timestamp: Date.now(),
     };
   } catch (error) {
@@ -63,7 +64,7 @@ const LocationSchema = z.object({
 });
 
 const DoctorLocationSchema = LocationSchema.extend({
-    specialty: z.string().max(100, {message: 'Specialty input cannot exceed 100 characters.'}).optional(),
+    specialty: z.string().max(100, {message: 'Specialty input cannot exceed 100 characters.'}).optional().nullable(), // Allow empty string from form, which will be treated as undefined later
 });
 
 
@@ -133,7 +134,7 @@ export async function handleFindDoctors(
 ): Promise<FindDoctorsFormState> {
   const rawFormData = {
     location: formData.get('location'),
-    specialty: formData.get('specialty') || undefined, // Ensure specialty is undefined if empty
+    specialty: formData.get('specialty') || undefined, 
   };
   
   const validatedFields = DoctorLocationSchema.safeParse(rawFormData);
@@ -148,7 +149,8 @@ export async function handleFindDoctors(
   
   const input: FindDoctorsInput = { 
     location: validatedFields.data.location,
-    specialty: validatedFields.data.specialty || undefined, // Pass undefined if empty string
+    // Ensure empty string or null from form becomes undefined for the AI flow
+    specialty: validatedFields.data.specialty ? validatedFields.data.specialty : undefined, 
   };
 
   try {
