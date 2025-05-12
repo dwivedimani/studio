@@ -36,10 +36,10 @@ export default function FindPathologyLabs() {
       <CardHeader className="bg-primary/20">
         <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
           <TestTube2 className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
-          Find Pathology Labs (Illustrative)
+          Find Pathology Labs
         </CardTitle>
         <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
-          Enter a location for AI-generated examples of pathology labs. For demonstration only.
+          Enter a location for AI-generated examples of pathology labs. For demonstration purposes.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
@@ -75,7 +75,7 @@ export default function FindPathologyLabs() {
         <CardFooter className="flex-col items-start p-4 sm:p-6 border-t bg-card">
           <Alert variant="default" className="mb-4 bg-accent/10 border-accent text-accent-foreground">
             <AlertTriangle className="h-4 w-4 text-accent" />
-            <AlertTitle className="font-semibold text-accent-foreground">Illustrative Data</AlertTitle>
+            <AlertTitle className="font-semibold text-accent-foreground">AI-Generated Data</AlertTitle>
             <AlertDescription className="text-xs">
               {state.data.disclaimer} Searched for: <span className="font-medium">{state.data.searchedLocation}</span>
             </AlertDescription>
@@ -103,10 +103,11 @@ export default function FindPathologyLabs() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">No illustrative pathology lab data generated for this location.</p>
+            <p className="text-sm text-muted-foreground">No pathology lab data generated for this location.</p>
           )}
         </CardFooter>
       )}
     </Card>
   );
 }
+

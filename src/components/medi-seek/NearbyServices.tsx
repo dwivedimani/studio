@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { MapPin, Stethoscope, Search, Loader2, AlertTriangle, Phone, Clock, Building, AlertCircle } from 'lucide-react'; // Added AlertCircle
+import { MapPin, Stethoscope, Search, Loader2, AlertTriangle, Phone, Clock, Building, AlertCircle } from 'lucide-react'; 
 
 const initialPharmaciesState: FindPharmaciesFormState = { message: '', timestamp: 0 };
 const initialDoctorsState: FindDoctorsFormState = { message: '', timestamp: 0 };
@@ -46,7 +46,7 @@ export default function NearbyServices({ suggestedSpecialty }: NearbyServicesPro
   
   React.useEffect(() => {
     if (pharmaciesState.data || pharmaciesState.errors) { // Reset on data or error to clear previous results
-        pharmacyFormRef.current?.reset();
+        // pharmacyFormRef.current?.reset(); // Decided against auto-resetting forms
     }
   }, [pharmaciesState.timestamp]); // Use timestamp to detect new submission
 
@@ -73,10 +73,10 @@ export default function NearbyServices({ suggestedSpecialty }: NearbyServicesPro
         <CardHeader className="bg-primary/20">
           <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
             <MapPin className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
-            Find Nearby Pharmacies (Illustrative)
+            Find Nearby Pharmacies
           </CardTitle>
           <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
-            Enter a location to get AI-generated examples of pharmacies. This is for demonstration only.
+            Enter a location to get AI-generated examples of pharmacies. This is for demonstration purposes.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
@@ -112,7 +112,7 @@ export default function NearbyServices({ suggestedSpecialty }: NearbyServicesPro
           <CardFooter className="flex-col items-start p-4 sm:p-6 border-t bg-card">
             <Alert variant="default" className="mb-4 bg-accent/10 border-accent text-accent-foreground">
               <AlertTriangle className="h-4 w-4 text-accent" />
-              <AlertTitle className="font-semibold text-accent-foreground">Illustrative Data</AlertTitle>
+              <AlertTitle className="font-semibold text-accent-foreground">AI-Generated Data</AlertTitle>
               <AlertDescription className="text-xs">
                 {pharmaciesState.data.disclaimer} Searched for: <span className="font-medium">{pharmaciesState.data.searchedLocation}</span>
               </AlertDescription>
@@ -130,7 +130,7 @@ export default function NearbyServices({ suggestedSpecialty }: NearbyServicesPro
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No illustrative pharmacy data generated for this location.</p>
+              <p className="text-sm text-muted-foreground">No pharmacy data generated for this location.</p>
             )}
           </CardFooter>
         )}
@@ -141,10 +141,10 @@ export default function NearbyServices({ suggestedSpecialty }: NearbyServicesPro
         <CardHeader className="bg-primary/20">
           <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
             <Stethoscope className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
-            Find Doctors (Illustrative)
+            Find Doctors
           </CardTitle>
           <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
-            Enter location &amp; optionally specialty. Specialty may be pre-filled based on symptom analysis. For demonstration only.
+            Enter location &amp; optionally specialty. Specialty may be pre-filled based on symptom analysis. For demonstration purposes.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
@@ -197,7 +197,7 @@ export default function NearbyServices({ suggestedSpecialty }: NearbyServicesPro
           <CardFooter className="flex-col items-start p-4 sm:p-6 border-t bg-card">
              <Alert variant="default" className="mb-4 bg-accent/10 border-accent text-accent-foreground">
               <AlertTriangle className="h-4 w-4 text-accent" />
-              <AlertTitle className="font-semibold text-accent-foreground">Illustrative Data</AlertTitle>
+              <AlertTitle className="font-semibold text-accent-foreground">AI-Generated Data</AlertTitle>
               <AlertDescription className="text-xs">
                 {doctorsState.data.disclaimer} Searched for: <span className="font-medium">{doctorsState.data.searchedLocation}</span>
                 {doctorsState.data.searchedSpecialty && <>, Specialty: <span className="font-medium">{doctorsState.data.searchedSpecialty}</span></>}
@@ -216,7 +216,7 @@ export default function NearbyServices({ suggestedSpecialty }: NearbyServicesPro
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">No illustrative doctor data generated for this location/specialty.</p>
+              <p className="text-sm text-muted-foreground">No doctor data generated for this location/specialty.</p>
             )}
           </CardFooter>
         )}
@@ -224,3 +224,4 @@ export default function NearbyServices({ suggestedSpecialty }: NearbyServicesPro
     </div>
   );
 }
+

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { HospitalIcon, Search, Loader2, AlertTriangle, Phone, Building, AlertCircle, HeartPulse, Star } from 'lucide-react'; // Changed Hospital to HospitalIcon, BuildingMedical to Building
+import { HospitalIcon, Search, Loader2, AlertTriangle, Phone, Building, AlertCircle, HeartPulse, Star } from 'lucide-react'; 
 
 const initialHospitalsState: FindHospitalsFormState = { message: '', timestamp: 0 };
 
@@ -51,11 +51,11 @@ export default function FindHospitals() {
     <Card className="shadow-lg rounded-xl overflow-hidden">
       <CardHeader className="bg-primary/20">
         <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
-          <HospitalIcon className="mr-3 h-6 w-6 sm:h-7 sm:w-7" /> {/* Changed to HospitalIcon */}
-          Find Hospitals (Illustrative)
+          <HospitalIcon className="mr-3 h-6 w-6 sm:h-7 sm:w-7" /> 
+          Find Hospitals
         </CardTitle>
         <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
-          Enter a location for AI-generated examples of hospitals. For demonstration only.
+          Enter a location for AI-generated examples of hospitals. For demonstration purposes.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
@@ -91,7 +91,7 @@ export default function FindHospitals() {
         <CardFooter className="flex-col items-start p-4 sm:p-6 border-t bg-card">
           <Alert variant="default" className="mb-4 bg-accent/10 border-accent text-accent-foreground">
             <AlertTriangle className="h-4 w-4 text-accent" />
-            <AlertTitle className="font-semibold text-accent-foreground">Illustrative Data</AlertTitle>
+            <AlertTitle className="font-semibold text-accent-foreground">AI-Generated Data</AlertTitle>
             <AlertDescription className="text-xs">
               {state.data.disclaimer} Searched for: <span className="font-medium">{state.data.searchedLocation}</span>
             </AlertDescription>
@@ -126,10 +126,11 @@ export default function FindHospitals() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">No illustrative hospital data generated for this location.</p>
+            <p className="text-sm text-muted-foreground">No hospital data generated for this location.</p>
           )}
         </CardFooter>
       )}
     </Card>
   );
 }
+
