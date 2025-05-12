@@ -12,6 +12,7 @@ import FindHospitals from '@/components/medi-seek/FindHospitals';
 import { handleSymptomAnalysis, type FormState } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ClipboardPenLine, AlertTriangle, Info } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const initialState: FormState = {
   message: '',
@@ -43,13 +44,17 @@ export default function HomePage() {
       <AppHeader />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Column 1: Pathology Labs and Hospitals */}
-          <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-28">
-            <FindPathologyLabs />
-            <FindHospitals />
+          {/* Column 1: Pathology Labs and Hospitals - Scrollable */}
+          <div className="lg:col-span-1 lg:sticky lg:top-28">
+            <ScrollArea className="h-[calc(100vh-9rem)] pr-4"> {/* 9rem = 7rem (top-28) + 2rem (for main's pb-8 / footer clearance) */}
+              <div className="space-y-8">
+                <FindPathologyLabs />
+                <FindHospitals />
+              </div>
+            </ScrollArea>
           </div>
 
-          {/* Column 2: Symptom Input and Results */}
+          {/* Column 2: Symptom Input and Results - This column will scroll with the page */}
           <div className="lg:col-span-1 space-y-8">
             <Card className="shadow-xl rounded-xl overflow-hidden">
               <CardHeader className="bg-card">
@@ -102,9 +107,13 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Column 3: Existing NearbyServices (Pharmacies & Doctors) */}
-          <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-28">
-            <NearbyServices suggestedSpecialty={suggestedSpecialty} />
+          {/* Column 3: Existing NearbyServices (Pharmacies & Doctors) - Scrollable */}
+          <div className="lg:col-span-1 lg:sticky lg:top-28">
+            <ScrollArea className="h-[calc(100vh-9rem)] pr-4">
+               <div className="space-y-8">
+                <NearbyServices suggestedSpecialty={suggestedSpecialty} />
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </main>
