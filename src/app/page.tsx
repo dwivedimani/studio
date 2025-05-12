@@ -7,6 +7,8 @@ import AppFooter from '@/components/medi-seek/AppFooter';
 import SymptomForm from '@/components/medi-seek/SymptomForm';
 import MedicineDisplay from '@/components/medi-seek/MedicineDisplay';
 import NearbyServices from '@/components/medi-seek/NearbyServices';
+import FindPathologyLabs from '@/components/medi-seek/FindPathologyLabs';
+import FindHospitals from '@/components/medi-seek/FindHospitals';
 import { handleSymptomAnalysis, type FormState } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ClipboardPenLine, AlertTriangle, Info } from 'lucide-react';
@@ -41,8 +43,14 @@ export default function HomePage() {
       <AppHeader />
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Left Column / Main Column: Symptom Input and Results */}
-          <div className="lg:col-span-2 space-y-8">
+          {/* Column 1: Pathology Labs and Hospitals */}
+          <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-28">
+            <FindPathologyLabs />
+            <FindHospitals />
+          </div>
+
+          {/* Column 2: Symptom Input and Results */}
+          <div className="lg:col-span-1 space-y-8">
             <Card className="shadow-xl rounded-xl overflow-hidden">
               <CardHeader className="bg-card">
                 <div className="flex items-center space-x-4">
@@ -94,8 +102,8 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Right Column / Sidebar: Nearby Services */}
-          <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-28"> {/* Sticky for desktop */}
+          {/* Column 3: Existing NearbyServices (Pharmacies & Doctors) */}
+          <div className="lg:col-span-1 space-y-8 lg:sticky lg:top-28">
             <NearbyServices suggestedSpecialty={suggestedSpecialty} />
           </div>
         </div>
