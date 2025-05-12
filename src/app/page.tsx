@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useActionState } from 'react';
@@ -65,8 +66,8 @@ export default function HomePage() {
                    <div className="flex items-center space-x-4">
                     <Info className="h-10 w-10 text-accent" />
                     <div>
-                        <CardTitle className="text-2xl sm:text-3xl font-semibold text-accent-foreground">Analysis Results</CardTitle>
-                        <CardDescription className="text-sm sm:text-base text-accent-foreground/80 mt-1">
+                        <CardTitle className="text-2xl sm:text-3xl font-semibold text-accent">Analysis Results</CardTitle>
+                        <CardDescription className="text-sm sm:text-base text-accent/90 mt-1">
                           Please review the suggestions and disclaimer carefully.
                         </CardDescription>
                     </div>
