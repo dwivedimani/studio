@@ -52,7 +52,7 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Background image variable */
-    --app-bg-image: url('https://picsum.photos/seed/medhospital/1920/1080'); /* Placeholder for medical equipment & hospital */
+    --app-bg-image: url('https://picsum.photos/seed/modern-medical/1920/1080'); /* Placeholder for medical theme */
   }
 
   .dark {
