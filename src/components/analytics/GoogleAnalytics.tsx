@@ -11,7 +11,7 @@ export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 export const pageview = (url: URL) => {
   if (typeof window.gtag === 'function' && GA_MEASUREMENT_ID) {
     window.gtag('config', GA_MEASUREMENT_ID, {
-      page_path: url.toString(),
+      page_path: url.pathname + url.search, // Use pathname + search for consistency
     });
   }
 };
@@ -42,6 +42,8 @@ export default function GoogleAnalytics() {
       return;
     }
     // Construct the full URL, including search parameters
+    // The 'base' part of the URL (window.location.origin) is only needed for the URL constructor,
+    // but GA uses page_path relative to the domain.
     const url = new URL(pathname, window.location.origin);
     searchParams.forEach((value, key) => {
       url.searchParams.append(key, value);
@@ -77,3 +79,4 @@ export default function GoogleAnalytics() {
     </>
   );
 }
+
