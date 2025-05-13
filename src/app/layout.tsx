@@ -4,6 +4,7 @@ import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from '@/contexts/LanguageContext';
+import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,9 +31,10 @@ export default function RootLayout({
     <html> 
       <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        data-ai-hint="modern medical" // For background image suggestion
+        data-ai-hint="medical technology" 
       >
         <LanguageProvider>
+          {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && <GoogleAnalytics />}
           {children}
           <Toaster />
         </LanguageProvider>
