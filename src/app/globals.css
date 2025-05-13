@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
+/* font-family rule previously here is now implicitly handled by Tailwind's base and Geist fonts in layout.tsx */
 
 @layer base {
   :root {
@@ -52,6 +50,9 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Background image variable */
+    --app-bg-image: url('https://picsum.photos/1920/1080?grayscale&blur=2');
   }
 
   .dark {
@@ -97,15 +98,25 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Background image variable for dark mode, can be same or different */
+    /* Using the same grayscale blurred image as it's fairly neutral */
+    /* --app-bg-image: url('https://picsum.photos/1920/1080?grayscale&blur=2&random=dark'); */
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground; /* Sets default text color */
+    /* font-family is handled by Geist fonts in layout.tsx and Tailwind's base styles */
+    background-image: var(--app-bg-image);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Keeps the background image static during scroll */
+    /* @apply bg-background is removed to allow the image to be visible.
+       Content areas should define their own backgrounds (e.g., bg-card for cards, bg-secondary/30 for page wrappers). */
   }
 }
 

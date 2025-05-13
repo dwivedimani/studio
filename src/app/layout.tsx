@@ -28,7 +28,10 @@ export default function RootLayout({
   return (
     // The lang attribute will be set dynamically by LanguageProvider
     <html> 
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}>
+      <body 
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        data-ai-hint="medical abstract" // For background image suggestion
+      >
         <LanguageProvider>
           {children}
           <Toaster />
