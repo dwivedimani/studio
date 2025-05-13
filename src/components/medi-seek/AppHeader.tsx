@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { StethoscopeIcon, Search } from 'lucide-react';
 import {
@@ -9,8 +11,21 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { Button } from '@/components/ui/button';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default function AppHeader() {
+  const pathname = usePathname();
+
+  const getMenuItemClass = (href: string) => {
+    if (pathname === href) {
+      // Apply these classes if the current path matches the link's href
+      // These will be merged with MenubarItem's default classes
+      return "bg-accent/10 text-accent-foreground font-medium"; 
+    }
+    return ""; // No extra classes if not active
+  };
+
   return (
     <header className="bg-card shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -29,17 +44,17 @@ export default function AppHeader() {
               </Button>
             </MenubarTrigger>
             <MenubarContent>
-              <MenubarItem asChild>
+              <MenubarItem asChild className={cn(getMenuItemClass("/find-pharmacies"))}>
                 <Link href="/find-pharmacies">Find Pharmacies</Link>
               </MenubarItem>
-              <MenubarItem asChild>
+              <MenubarItem asChild className={cn(getMenuItemClass("/find-doctors"))}>
                 <Link href="/find-doctors">Find Doctors</Link>
               </MenubarItem>
               <MenubarSeparator />
-              <MenubarItem asChild>
+              <MenubarItem asChild className={cn(getMenuItemClass("/find-pathology-labs"))}>
                 <Link href="/find-pathology-labs">Find Pathology Labs</Link>
               </MenubarItem>
-              <MenubarItem asChild>
+              <MenubarItem asChild className={cn(getMenuItemClass("/find-hospitals"))}>
                 <Link href="/find-hospitals">Find Hospitals</Link>
               </MenubarItem>
             </MenubarContent>
