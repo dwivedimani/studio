@@ -5,6 +5,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
+import { Suspense } from 'react'; // Import Suspense
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -34,7 +35,11 @@ export default function RootLayout({
         data-ai-hint="medical technology" 
       >
         <LanguageProvider>
-          {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && <GoogleAnalytics />}
+          {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+            <Suspense fallback={null}> {/* Wrap GoogleAnalytics in Suspense */}
+              <GoogleAnalytics />
+            </Suspense>
+          )}
           {children}
           <Toaster />
         </LanguageProvider>
