@@ -30,7 +30,7 @@ export default function RootLayout({
     <html> 
       <body 
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        data-ai-hint="medical abstract" // For background image suggestion
+        data-ai-hint="medical equipment" // For background image suggestion
       >
         <LanguageProvider>
           {children}
