@@ -1,3 +1,4 @@
+
 // 'use server';
 
 /**
@@ -17,6 +18,7 @@ const AnalyzeSymptomsInputSchema = z.object({
   symptoms: z
     .string()
     .describe("A description of the user's symptoms."),
+  language: z.string().optional().default('en').describe("The language for the AI response, e.g., 'en', 'es'. ISO 639-1 code."),
 });
 
 export type AnalyzeSymptomsInput = z.infer<typeof AnalyzeSymptomsInputSchema>;
@@ -56,14 +58,18 @@ const analyzeSymptomsPrompt = ai.definePrompt({
 2. Suggest a general medical specialty that a person might consider consulting for such symptoms (e.g., "General Practitioner", "Dermatologist", "Pulmonologist"). If the symptoms are very generic or don't clearly point to a specialty, you can omit this or suggest "General Practitioner".
 3. Provide a disclaimer.
 
+Your response MUST be in the language specified by the code: {{{language}}}.
+(For example, if 'es', respond in Spanish. If 'fr', respond in French. Default to English if language is 'en' or not explicitly supported.)
+
 Symptoms: {{{symptoms}}}
 
 Please provide:
 - A list of suggested medicines, each with a 'name' and a 'dosage'.
 - A 'suggestedSpecialty' if applicable.
-- A 'disclaimer' stating that these suggestions are for informational purposes only, not a substitute for professional medical advice, dosages are general, and users should read labels and consult a healthcare professional.
+- A 'disclaimer' stating that these suggestions are for informational purposes only, not a substitute for professional medical advice, dosages are general, and users should read labels and consult a healthcare professional. 
+ALL parts of your response, including medicine names, dosages, specialty, and the disclaimer, must be in the language: {{{language}}}.
 
-Format your response as a JSON object according to the output schema.
+Format your response as a JSON object according to the output schema. Ensure the language of the content in the JSON fields (name, dosage, disclaimer, suggestedSpecialty) matches the requested {{{language}}}.
   `,
 });
 

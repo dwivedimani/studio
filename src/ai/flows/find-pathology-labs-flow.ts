@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Provides a Genkit flow to find plausible pathology lab information based on a user-provided location.
@@ -9,10 +10,11 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z}from 'genkit';
 
 const FindPathologyLabsInputSchema = z.object({
   location: z.string().describe("The city, zip code, or general area to search for pathology labs."),
+  language: z.string().optional().default('en').describe("The language for the AI response, e.g., 'en', 'es'. ISO 639-1 code."),
 });
 export type FindPathologyLabsInput = z.infer<typeof FindPathologyLabsInputSchema>;
 
@@ -39,19 +41,30 @@ export async function findPathologyLabs(input: FindPathologyLabsInput): Promise<
   return findPathologyLabsFlow(input);
 }
 
+// Intermediate schema for LLM output
+const LLMPromptOutputSchema = z.object({
+  labs: z.array(PathologyLabSchema),
+  disclaimer: z.string(),
+  searchedLocation: z.string().optional(),
+});
+
 const findPathologyLabsPrompt = ai.definePrompt({
   name: 'findPathologyLabsPrompt',
   input: {schema: FindPathologyLabsInputSchema},
-  output: {schema: FindPathologyLabsOutputSchema},
+  output: {schema: LLMPromptOutputSchema},
   prompt: `You are an assistant that helps users find pathology labs by generating plausible examples.
+Your response MUST be in the language specified by the code: {{{language}}}.
+(For example, if 'es', respond in Spanish. If 'fr', respond in French. Default to English if language is 'en' or not explicitly supported.)
+
 Based on the provided location: {{{location}}}, generate a list of 2 to 3 plausible pathology lab names, their full addresses, phone numbers (if you can make one up), common services offered (like 'Blood Tests', 'Urine Analysis', 'Biopsy Processing', 'Imaging - X-Ray'), and operating hours.
 The generated data should look realistic but is not real.
 Ensure the addresses appear reasonable for a general urban or suburban area.
 
 Crucially, you MUST include a 'disclaimer'. The disclaimer should state: "The pathology lab information provided is AI-generated. It may not be real, accurate, or current. Always verify information with official sources and consult with healthcare providers for medical advice."
-Also, return the 'searchedLocation' which is the original location input by the user.
+ALL parts of your response, including lab names, addresses, services, hours, and the disclaimer, must be in the language: {{{language}}}.
+Also, try to return the 'searchedLocation' which is the original location input by the user.
 
-Format your response as a JSON object according to the output schema.
+Format your response as a JSON object according to the output schema. The language of the content in the JSON fields must match {{{language}}}.
   `,
 });
 
@@ -62,8 +75,14 @@ const findPathologyLabsFlow = ai.defineFlow(
     outputSchema: FindPathologyLabsOutputSchema,
   },
   async (input: FindPathologyLabsInput) => {
-    const {output} = await findPathologyLabsPrompt(input);
-    return output!;
+    const { output: llmOutput } = await findPathologyLabsPrompt(input);
+     if (!llmOutput || !llmOutput.labs || !llmOutput.disclaimer) {
+      throw new Error('AI model failed to generate valid pathology lab information.');
+    }
+    return {
+      ...llmOutput,
+      searchedLocation: input.location, // Ensure input location is used
+    };
   }
 );
 

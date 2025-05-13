@@ -10,34 +10,47 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { TestTube2, Search, Loader2, AlertTriangle, Phone, Clock, Building, AlertCircle, FlaskConical } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const initialPathologyLabsState: FindPathologyLabsFormState = { message: '', timestamp: 0 };
 
 function SubmitButton({ pending }: { pending: boolean }) {
+  const { t } = useLanguage();
   return (
     <Button type="submit" disabled={pending} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-      {pending ? 'Searching...' : 'Search Labs'}
+      {pending ? t('searchingButton') : t('searchButton')}
     </Button>
   );
 }
 
 export default function FindPathologyLabs() {
+  const { t, language } = useLanguage();
   const [state, formAction, pending] = useActionState(handleFindPathologyLabs, initialPathologyLabsState);
   const formRef = useRef<HTMLFormElement>(null);
 
-  React.useEffect(() => {
-    if (state.data || state.errors) {
-      // formRef.current?.reset(); // Optionally reset form on new data/error
+  const translateError = (errorMsg: string): string => {
+    if (errorMsg.includes('|')) {
+      const parts = errorMsg.split('|');
+      const errorKey = parts[0];
+      try {
+        const params = parts[1] ? JSON.parse(parts[1]) : undefined;
+        return t(errorKey, params);
+      } catch (e) { return t(errorKey); }
     }
-  }, [state.timestamp]);
+    return t(errorMsg);
+  };
+
+  const locationErrors = state.errors?.location?.map(translateError).join(', ');
+  const formErrors = state.errors?._form?.map(translateError).join(', ');
+
 
   return (
     <Card className="shadow-lg rounded-xl overflow-hidden w-full max-w-lg mx-auto">
       <CardHeader className="bg-primary/20">
         <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
           <TestTube2 className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
-          Find Pathology Labs
+          {t('findPathologyLabs')}
         </CardTitle>
         <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
           Enter a location for AI-generated examples of pathology labs. For demonstration purposes.
@@ -45,43 +58,44 @@ export default function FindPathologyLabs() {
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
         <form action={formAction} ref={formRef} className="space-y-4">
+          <input type="hidden" name="language" value={language} />
           <div>
-            <Label htmlFor="pathology-location" className="text-sm font-medium">Location (e.g., City, Zip Code)</Label>
+            <Label htmlFor="pathology-location" className="text-sm font-medium">{t('locationInputLabel')}</Label>
             <Input
               id="pathology-location"
               name="location"
-              placeholder="e.g., Metropolis, 54321"
+              placeholder={t('locationPlaceholderPathology')}
               className="mt-1"
               required
             />
-            {state.errors?.location && (
+            {locationErrors && (
               <Alert variant="destructive" className="mt-2 text-xs">
                 <AlertCircle className="h-3 w-3" />
-                <AlertDescription>{state.errors.location.join(', ')}</AlertDescription>
+                <AlertDescription>{locationErrors}</AlertDescription>
               </Alert>
             )}
           </div>
           <SubmitButton pending={pending} />
         </form>
 
-        {state.errors?._form && (
+        {formErrors && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle className="font-semibold">Search Error</AlertTitle>
-            <AlertDescription>{state.errors._form.join(', ')}</AlertDescription>
+            <AlertTitle className="font-semibold">{t('searchErrorTitle')}</AlertTitle>
+            <AlertDescription>{formErrors}</AlertDescription>
           </Alert>
         )}
       </CardContent>
       {state.data && (
         <CardFooter className="flex-col items-start p-4 sm:p-6 border-t bg-card">
-          <Alert variant="default" className="mb-4 bg-accent/20 border-accent text-accent-foreground"> {/* Changed bg-accent/10 to bg-accent/20 */}
+          <Alert variant="default" className="mb-4 bg-accent/20 border-accent text-accent-foreground">
             <AlertTriangle className="h-4 w-4 text-accent" />
-            <AlertTitle className="font-semibold text-accent-foreground">AI-Generated Data</AlertTitle>
+            <AlertTitle className="font-semibold text-accent-foreground">{t('aiGeneratedDataTitle')}</AlertTitle>
             <AlertDescription className="text-xs">
-              {state.data.disclaimer} Searched for: <span className="font-medium">{state.data.searchedLocation}</span>
+             {t('aiGeneratedDataDisclaimer', { disclaimer: state.data.disclaimer, location: state.data.searchedLocation, specialtyString: '' })}
             </AlertDescription>
           </Alert>
-          <h4 className="text-lg font-semibold mb-2 text-foreground">Generated Lab Results:</h4>
+          <h4 className="text-lg font-semibold mb-2 text-foreground">{t('generatedResultsTitle', { entity: t('findPathologyLabs') })}</h4>
           {state.data.labs.length > 0 ? (
             <ul className="space-y-3 w-full">
               {state.data.labs.map((lab, index) => (
@@ -104,7 +118,7 @@ export default function FindPathologyLabs() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">No pathology lab data generated for this location.</p>
+            <p className="text-sm text-muted-foreground">{t('noDataGenerated', { entity: t('findPathologyLabs').toLowerCase(), specialtyString: '' })}</p>
           )}
         </CardFooter>
       )}

@@ -1,0 +1,15 @@
+
+{
+  "headerTitlePart1": "मेडी",
+  "headerTitlePart2": "सीक",
+  "findServices": "सेवाएं खोजें",
+  "findPharmacies": "फार्मेसी खोजें",
+  "findDoctors": "डॉक्टर खोजें",
+  "findPathologyLabs": "पैथोलॉजी लैब खोजें",
+  "findHospitals": "अस्पताल खोजें",
+  "language": "भाषा",
+  "symptomAnalyzerTitle": "लक्षण विश्लेषक",
+  "symptomsPlaceholder": "जैसे, मुझे लगातार खांसी है, दो दिनों से हल्का बुखार है, और शरीर में दर्द है...",
+  "analyzeSymptomsButton": "लक्षणों का विश्लेषण करें",
+  "disclaimerAI": "जानकारी के उद्देश्यों के लिए एआई-जनित सामग्री। हमेशा एक स्वास्थ्य देखभाल पेशेवर से परामर्श करें।"
+}

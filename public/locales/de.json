@@ -1,0 +1,15 @@
+
+{
+  "headerTitlePart1": "Medi",
+  "headerTitlePart2": "Seek",
+  "findServices": "Dienste Finden",
+  "findPharmacies": "Apotheken Finden",
+  "findDoctors": "Ärzte Finden",
+  "findPathologyLabs": "Labore Finden",
+  "findHospitals": "Krankenhäuser Finden",
+  "language": "Sprache",
+  "symptomAnalyzerTitle": "Symptomanalysator",
+  "symptomsPlaceholder": "z.B. Ich habe anhaltenden Husten, leichtes Fieber seit zwei Tagen und Gliederschmerzen...",
+  "analyzeSymptomsButton": "Symptome Analysieren",
+  "disclaimerAI": "KI-generierter Inhalt zu Informationszwecken. Konsultieren Sie immer einen Arzt."
+}

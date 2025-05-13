@@ -1,3 +1,4 @@
+
 'use server';
 
 import { analyzeSymptoms, type AnalyzeSymptomsInput, type AnalyzeSymptomsOutput } from '@/ai/flows/analyze-symptoms';
@@ -6,9 +7,10 @@ import { findDoctors, type FindDoctorsInput, type FindDoctorsOutput } from '@/ai
 import { findPathologyLabs, type FindPathologyLabsInput, type FindPathologyLabsOutput } from '@/ai/flows/find-pathology-labs-flow';
 import { findHospitals, type FindHospitalsInput, type FindHospitalsOutput } from '@/ai/flows/find-hospitals-flow';
 import { z } from 'zod';
+import type { LanguageCode } from '@/contexts/LanguageContext'; // Import LanguageCode
 
 const SymptomSchema = z.object({
-  symptoms: z.string().min(10, { message: 'Please describe your symptoms in at least 10 characters.' }).max(1000, {message: 'Symptoms description cannot exceed 1000 characters.'}),
+  symptoms: z.string().min(10, { message: 'validationMinChars|{"count":10}' }).max(1000, {message: 'validationMaxChars|{"count":1000}'}),
 });
 
 export interface FormState {
@@ -25,6 +27,7 @@ export async function handleSymptomAnalysis(
   prevState: FormState, 
   formData: FormData
 ): Promise<FormState> {
+  const lang = (formData.get('language') as LanguageCode) || 'en';
   const rawFormData = {
     symptoms: formData.get('symptoms'),
   };
@@ -33,17 +36,20 @@ export async function handleSymptomAnalysis(
 
   if (!validatedFields.success) {
     return {
-      message: 'Validation failed. Please check your input.',
+      message: 'validationFailedMessage',
       errors: validatedFields.error.flatten().fieldErrors,
       timestamp: Date.now(),
     };
   }
 
   try {
-    const input: AnalyzeSymptomsInput = { symptoms: validatedFields.data.symptoms };
+    const input: AnalyzeSymptomsInput = { 
+      symptoms: validatedFields.data.symptoms,
+      language: lang 
+    };
     const result = await analyzeSymptoms(input);
     return {
-      message: 'Symptoms analyzed successfully.',
+      message: 'Symptoms analyzed successfully.', // This message is not typically translated as it's for internal state logic
       analysis: result, 
       timestamp: Date.now(),
     };
@@ -51,8 +57,8 @@ export async function handleSymptomAnalysis(
     console.error('AI analysis error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
-      message: 'An error occurred during symptom analysis. Please try again later.',
-      errors: { _form: [`Symptom analysis failed: ${errorMessage}`] },
+      message: 'errorDuringAnalysisMessage',
+      errors: { _form: [`symptomAnalysisFailed|{"error":"${errorMessage}"}`] },
       timestamp: Date.now(),
     };
   }
@@ -60,11 +66,11 @@ export async function handleSymptomAnalysis(
 
 
 const LocationSchema = z.object({
-  location: z.string().min(3, { message: 'Please enter a location (e.g., city or zip code) with at least 3 characters.' }).max(100, {message: 'Location input cannot exceed 100 characters.'}),
+  location: z.string().min(3, { message: 'validationLocationMinChars|{"count":3}' }).max(100, {message: 'validationLocationMaxChars|{"count":100}'}),
 });
 
 const DoctorLocationSchema = LocationSchema.extend({
-    specialty: z.string().max(100, {message: 'Specialty input cannot exceed 100 characters.'}).optional().nullable(), 
+    specialty: z.string().max(100, {message: 'validationSpecialtyMaxChars|{"count":100}'}).optional().nullable(), 
 });
 
 
@@ -82,6 +88,7 @@ export async function handleFindPharmacies(
   prevState: FindPharmaciesFormState,
   formData: FormData
 ): Promise<FindPharmaciesFormState> {
+  const lang = (formData.get('language') as LanguageCode) || 'en';
   const rawFormData = {
     location: formData.get('location'),
   };
@@ -90,17 +97,20 @@ export async function handleFindPharmacies(
 
   if (!validatedFields.success) {
     return {
-      message: 'Validation failed. Please check the location input.',
+      message: 'validationFailedMessage',
       errors: validatedFields.error.flatten().fieldErrors,
       timestamp: Date.now(),
     };
   }
 
   try {
-    const input: FindPharmaciesInput = { location: validatedFields.data.location };
+    const input: FindPharmaciesInput = { 
+      location: validatedFields.data.location,
+      language: lang
+    };
     const result = await findPharmacies(input);
     return {
-      message: 'Pharmacies search completed.',
+      message: 'searchCompletedMessage|{"entity":"Pharmacies"}',
       data: result,
       timestamp: Date.now(),
     };
@@ -108,8 +118,8 @@ export async function handleFindPharmacies(
     console.error('AI find pharmacies error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
-      message: 'An error occurred while searching for pharmacies.',
-      errors: { _form: [`Pharmacy search failed: ${errorMessage}`] },
+      message: 'errorDuringSearchMessage|{"entity_plural":"pharmacies"}',
+      errors: { _form: [`searchFailed|{"entity":"Pharmacy", "error":"${errorMessage}"}`] },
       timestamp: Date.now(),
     };
   }
@@ -130,6 +140,7 @@ export async function handleFindDoctors(
   prevState: FindDoctorsFormState,
   formData: FormData
 ): Promise<FindDoctorsFormState> {
+  const lang = (formData.get('language') as LanguageCode) || 'en';
   const rawFormData = {
     location: formData.get('location'),
     specialty: formData.get('specialty') || undefined, 
@@ -139,7 +150,7 @@ export async function handleFindDoctors(
 
   if (!validatedFields.success) {
     return {
-      message: 'Validation failed. Please check the location and specialty input.',
+      message: 'validationFailedMessage',
       errors: validatedFields.error.flatten().fieldErrors,
       timestamp: Date.now(),
     };
@@ -148,12 +159,13 @@ export async function handleFindDoctors(
   const input: FindDoctorsInput = { 
     location: validatedFields.data.location,
     specialty: validatedFields.data.specialty ? validatedFields.data.specialty : undefined, 
+    language: lang,
   };
 
   try {
     const result = await findDoctors(input);
     return {
-      message: 'Doctors search completed.',
+      message: 'searchCompletedMessage|{"entity":"Doctors"}',
       data: result,
       timestamp: Date.now(),
     };
@@ -161,8 +173,8 @@ export async function handleFindDoctors(
     console.error('AI find doctors error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
-      message: 'An error occurred while searching for doctors.',
-      errors: { _form: [`Doctor search failed: ${errorMessage}`] },
+      message: 'errorDuringSearchMessage|{"entity_plural":"doctors"}',
+      errors: { _form: [`searchFailed|{"entity":"Doctor", "error":"${errorMessage}"}`] },
       timestamp: Date.now(),
     };
   }
@@ -183,25 +195,29 @@ export async function handleFindPathologyLabs(
   prevState: FindPathologyLabsFormState,
   formData: FormData
 ): Promise<FindPathologyLabsFormState> {
+  const lang = (formData.get('language') as LanguageCode) || 'en';
   const rawFormData = {
     location: formData.get('location'),
   };
 
-  const validatedFields = LocationSchema.safeParse(rawFormData); // Using the generic LocationSchema
+  const validatedFields = LocationSchema.safeParse(rawFormData); 
 
   if (!validatedFields.success) {
     return {
-      message: 'Validation failed. Please check the location input.',
+      message: 'validationFailedMessage',
       errors: validatedFields.error.flatten().fieldErrors,
       timestamp: Date.now(),
     };
   }
 
   try {
-    const input: FindPathologyLabsInput = { location: validatedFields.data.location };
+    const input: FindPathologyLabsInput = { 
+      location: validatedFields.data.location,
+      language: lang 
+    };
     const result = await findPathologyLabs(input);
     return {
-      message: 'Pathology labs search completed.',
+      message: 'searchCompletedMessage|{"entity":"Pathology Labs"}',
       data: result,
       timestamp: Date.now(),
     };
@@ -209,8 +225,8 @@ export async function handleFindPathologyLabs(
     console.error('AI find pathology labs error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
-      message: 'An error occurred while searching for pathology labs.',
-      errors: { _form: [`Pathology lab search failed: ${errorMessage}`] },
+      message: 'errorDuringSearchMessage|{"entity_plural":"pathology labs"}',
+      errors: { _form: [`searchFailed|{"entity":"Pathology Lab", "error":"${errorMessage}"}`] },
       timestamp: Date.now(),
     };
   }
@@ -231,25 +247,29 @@ export async function handleFindHospitals(
   prevState: FindHospitalsFormState,
   formData: FormData
 ): Promise<FindHospitalsFormState> {
+  const lang = (formData.get('language') as LanguageCode) || 'en';
   const rawFormData = {
     location: formData.get('location'),
   };
 
-  const validatedFields = LocationSchema.safeParse(rawFormData); // Using the generic LocationSchema
+  const validatedFields = LocationSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
     return {
-      message: 'Validation failed. Please check the location input.',
+      message: 'validationFailedMessage',
       errors: validatedFields.error.flatten().fieldErrors,
       timestamp: Date.now(),
     };
   }
 
   try {
-    const input: FindHospitalsInput = { location: validatedFields.data.location };
+    const input: FindHospitalsInput = { 
+      location: validatedFields.data.location,
+      language: lang 
+    };
     const result = await findHospitals(input);
     return {
-      message: 'Hospitals search completed.',
+      message: 'searchCompletedMessage|{"entity":"Hospitals"}',
       data: result,
       timestamp: Date.now(),
     };
@@ -257,9 +277,10 @@ export async function handleFindHospitals(
     console.error('AI find hospitals error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     return {
-      message: 'An error occurred while searching for hospitals.',
-      errors: { _form: [`Hospital search failed: ${errorMessage}`] },
+      message: 'errorDuringSearchMessage|{"entity_plural":"hospitals"}',
+      errors: { _form: [`searchFailed|{"entity":"Hospital", "error":"${errorMessage}"}`] },
       timestamp: Date.now(),
     };
   }
 }
+

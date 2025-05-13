@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Provides a Genkit flow to find plausible hospital information based on a user-provided location.
@@ -9,10 +10,11 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z}from 'genkit';
 
 const FindHospitalsInputSchema = z.object({
   location: z.string().describe("The city, zip code, or general area to search for hospitals."),
+  language: z.string().optional().default('en').describe("The language for the AI response, e.g., 'en', 'es'. ISO 639-1 code."),
 });
 export type FindHospitalsInput = z.infer<typeof FindHospitalsInputSchema>;
 
@@ -40,19 +42,31 @@ export async function findHospitals(input: FindHospitalsInput): Promise<FindHosp
   return findHospitalsFlow(input);
 }
 
+// Intermediate schema for LLM output, allowing for optional searchedLocation from LLM
+const LLMPromptOutputSchema = z.object({
+  hospitals: z.array(HospitalSchema),
+  disclaimer: z.string(),
+  searchedLocation: z.string().optional(), // LLM might not echo this reliably
+});
+
+
 const findHospitalsPrompt = ai.definePrompt({
   name: 'findHospitalsPrompt',
   input: {schema: FindHospitalsInputSchema},
-  output: {schema: FindHospitalsOutputSchema},
+  output: {schema: LLMPromptOutputSchema}, // Use intermediate schema for LLM direct output
   prompt: `You are an assistant that helps users find hospitals by generating plausible examples.
+Your response MUST be in the language specified by the code: {{{language}}}.
+(For example, if 'es', respond in Spanish. If 'fr', respond in French. Default to English if language is 'en' or not explicitly supported.)
+
 Based on the provided location: {{{location}}}, generate a list of 2 to 3 plausible hospital names, their full addresses, phone numbers (if you can make one up), key departments/specialties (e.g., 'Cardiology', 'General Surgery', 'Emergency Medicine', 'Orthopedics'), whether they offer emergency services (true/false), and a plausible star rating (1-5).
 The generated data should look realistic but is not real.
 Ensure the addresses appear reasonable for a general urban or suburban area.
 
 Crucially, you MUST include a 'disclaimer'. The disclaimer should state: "The hospital information provided is AI-generated. It may not be real, accurate, or current. Always verify information with official sources and consult with healthcare providers for medical advice. In case of a medical emergency, call your local emergency number immediately."
-Also, return the 'searchedLocation' which is the original location input by the user.
+ALL parts of your response, including hospital names, addresses, specialties, and the disclaimer, must be in the language: {{{language}}}.
+Also, try to return the 'searchedLocation' which is the original location input by the user.
 
-Format your response as a JSON object according to the output schema.
+Format your response as a JSON object according to the output schema. The language of the content in the JSON fields must match {{{language}}}.
   `,
 });
 
@@ -60,11 +74,18 @@ const findHospitalsFlow = ai.defineFlow(
   {
     name: 'findHospitalsFlow',
     inputSchema: FindHospitalsInputSchema,
-    outputSchema: FindHospitalsOutputSchema,
+    outputSchema: FindHospitalsOutputSchema, // Flow's final output uses the stricter schema
   },
   async (input: FindHospitalsInput) => {
-    const {output} = await findHospitalsPrompt(input);
-    return output!;
+    const { output: llmOutput } = await findHospitalsPrompt(input);
+    if (!llmOutput || !llmOutput.hospitals || !llmOutput.disclaimer) {
+      throw new Error('AI model failed to generate valid hospital information.');
+    }
+    // Ensure searchedLocation from input is used in the final output
+    return {
+      ...llmOutput,
+      searchedLocation: input.location, 
+    };
   }
 );
 

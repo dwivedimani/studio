@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Provides a Genkit flow to find plausible pharmacy information based on a user-provided location.
@@ -9,10 +10,11 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z}from 'genkit';
 
 const FindPharmaciesInputSchema = z.object({
   location: z.string().describe("The city, zip code, or general area to search for pharmacies."),
+  language: z.string().optional().default('en').describe("The language for the AI response, e.g., 'en', 'es'. ISO 639-1 code."),
 });
 export type FindPharmaciesInput = z.infer<typeof FindPharmaciesInputSchema>;
 
@@ -38,19 +40,31 @@ export async function findPharmacies(input: FindPharmaciesInput): Promise<FindPh
   return findPharmaciesFlow(input);
 }
 
+// Intermediate schema for LLM output
+const LLMPromptOutputSchema = z.object({
+  pharmacies: z.array(PharmacySchema),
+  disclaimer: z.string(),
+  searchedLocation: z.string().optional(),
+});
+
+
 const findPharmaciesPrompt = ai.definePrompt({
   name: 'findPharmaciesPrompt',
   input: {schema: FindPharmaciesInputSchema},
-  output: {schema: FindPharmaciesOutputSchema},
+  output: {schema: LLMPromptOutputSchema},
   prompt: `You are an assistant that helps users find pharmacies by generating plausible examples.
+Your response MUST be in the language specified by the code: {{{language}}}.
+(For example, if 'es', respond in Spanish. If 'fr', respond in French. Default to English if language is 'en' or not explicitly supported.)
+
 Based on the provided location: {{{location}}}, generate a list of 3 to 5 plausible pharmacy names, full addresses, phone numbers (if you can make one up), and operating hours.
 The generated data should look realistic but is not real.
 Ensure the addresses appear reasonable for a general urban or suburban area if a specific type of location isn't implied by the input.
 
 Crucially, you MUST include a disclaimer. The disclaimer should state: "The pharmacy information provided is AI-generated. It may not be real, accurate, or current. Always verify information with official sources before visiting or relying on this information."
-Also, return the 'searchedLocation' which is the original location input by the user.
+ALL parts of your response, including pharmacy names, addresses, hours, and the disclaimer, must be in the language: {{{language}}}.
+Also, try to return the 'searchedLocation' which is the original location input by the user.
 
-Format your response as a JSON object according to the output schema.
+Format your response as a JSON object according to the output schema. The language of the content in the JSON fields must match {{{language}}}.
   `,
 });
 
@@ -61,8 +75,14 @@ const findPharmaciesFlow = ai.defineFlow(
     outputSchema: FindPharmaciesOutputSchema,
   },
   async (input: FindPharmaciesInput) => {
-    const {output} = await findPharmaciesPrompt(input);
-    return output!;
+    const { output: llmOutput } = await findPharmaciesPrompt(input);
+     if (!llmOutput || !llmOutput.pharmacies || !llmOutput.disclaimer) {
+      throw new Error('AI model failed to generate valid pharmacy information.');
+    }
+    return {
+      ...llmOutput,
+      searchedLocation: input.location, // Ensure input location is used
+    };
   }
 );
 

@@ -1,0 +1,15 @@
+
+{
+  "headerTitlePart1": "Medi",
+  "headerTitlePart2": "Seek",
+  "findServices": "Trouver des Services",
+  "findPharmacies": "Trouver des Pharmacies",
+  "findDoctors": "Trouver des Médecins",
+  "findPathologyLabs": "Trouver des Laboratoires",
+  "findHospitals": "Trouver des Hôpitaux",
+  "language": "Langue",
+  "symptomAnalyzerTitle": "Analyseur de Symptômes",
+  "symptomsPlaceholder": "ex., J'ai une toux persistante, une légère fièvre depuis deux jours et des courbatures...",
+  "analyzeSymptomsButton": "Analyser les Symptômes",
+  "disclaimerAI": "Contenu généré par IA à des fins d'information. Consultez toujours un professionnel de la santé."
+}
