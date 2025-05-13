@@ -43,7 +43,7 @@ export default function AppHeader() {
           <Menubar className="border-none bg-transparent">
             <MenubarMenu>
               <MenubarTrigger asChild>
-                <Button variant="ghost" className="text-foreground hover:bg-accent/30 focus:bg-accent/40">
+                <Button variant="ghost" className="text-foreground hover:bg-accent/50 focus:bg-accent/60">
                   <Search className="mr-2 h-4 w-4" /> {t('findServices')}
                 </Button>
               </MenubarTrigger>
@@ -68,7 +68,7 @@ export default function AppHeader() {
           <Menubar className="border-none bg-transparent">
             <MenubarMenu>
               <MenubarTrigger asChild>
-                <Button variant="ghost" className="text-foreground hover:bg-accent/30 focus:bg-accent/40">
+                <Button variant="ghost" className="text-foreground hover:bg-accent/50 focus:bg-accent/60">
                   <Languages className="mr-2 h-4 w-4" /> {availableLanguages[language]}
                 </Button>
               </MenubarTrigger>
@@ -89,3 +89,4 @@ export default function AppHeader() {
     </header>
   );
 }
+
