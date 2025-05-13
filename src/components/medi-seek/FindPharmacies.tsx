@@ -72,7 +72,7 @@ export default function FindPharmacies() {
       </CardContent>
       {state.data && (
         <CardFooter className="flex-col items-start p-4 sm:p-6 border-t bg-card">
-          <Alert variant="default" className="mb-4 bg-accent/10 border-accent text-accent-foreground">
+          <Alert variant="default" className="mb-4 bg-accent/20 border-accent text-accent-foreground"> {/* Changed bg-accent/10 to bg-accent/20 */}
             <AlertTriangle className="h-4 w-4 text-accent" />
             <AlertTitle className="font-semibold text-accent-foreground">AI-Generated Data</AlertTitle>
             <AlertDescription className="text-xs">
