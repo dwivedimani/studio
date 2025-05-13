@@ -26,7 +26,7 @@ export default function AppHeader() {
     if (pathname === href) {
       return "bg-accent text-accent-foreground font-medium hover:bg-accent/90";
     }
-    return ""; 
+    return "hover:bg-accent/10"; 
   };
 
   return (
@@ -43,7 +43,7 @@ export default function AppHeader() {
           <Menubar className="border-none bg-transparent">
             <MenubarMenu>
               <MenubarTrigger asChild>
-                <Button variant="ghost" className="text-foreground hover:bg-accent/10 focus:bg-accent/20">
+                <Button variant="ghost" className="text-foreground hover:bg-accent/30 focus:bg-accent/40">
                   <Search className="mr-2 h-4 w-4" /> {t('findServices')}
                 </Button>
               </MenubarTrigger>
@@ -68,14 +68,14 @@ export default function AppHeader() {
           <Menubar className="border-none bg-transparent">
             <MenubarMenu>
               <MenubarTrigger asChild>
-                <Button variant="ghost" className="text-foreground hover:bg-accent/10 focus:bg-accent/20">
+                <Button variant="ghost" className="text-foreground hover:bg-accent/30 focus:bg-accent/40">
                   <Languages className="mr-2 h-4 w-4" /> {availableLanguages[language]}
                 </Button>
               </MenubarTrigger>
               <MenubarContent>
                 <MenubarRadioGroup value={language} onValueChange={(value) => setLanguage(value as LanguageCode)}>
                   {Object.entries(availableLanguages).map(([code, name]) => (
-                    <MenubarRadioItem key={code} value={code} className="flex items-center justify-between">
+                    <MenubarRadioItem key={code} value={code} className="flex items-center justify-between hover:bg-accent/10">
                       <span>{name}</span>
                       {language === code && <Check className="h-4 w-4 text-accent" />}
                     </MenubarRadioItem>
