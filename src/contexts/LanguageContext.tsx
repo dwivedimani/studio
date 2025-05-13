@@ -91,7 +91,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
-    // Don't show key if loading and no translations yet for the initial language
     if (isLoading && !Object.keys(translations).length) return '...'; 
     
     let translation = translations[key];
@@ -109,12 +108,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     return translation;
   }, [translations, isLoading, language]);
 
-  // Avoid rendering children until initial language and basic translations are loaded
-  // This prevents a flash of untranslated content or keys if localStorage language is different from default 'en'
-   if (isLoading && !Object.keys(translations).length && typeof window !== 'undefined') {
-    return null; // Or a global loading spinner
-  }
-
+  // Removed the problematic `if (isLoading && ... ) return null;` block.
+  // The app will now render children, and the `t` function will handle displaying "..." or keys
+  // during loading or if translations are missing.
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t, translations, isLoading }}>
@@ -130,3 +126,4 @@ export const useLanguage = () => {
   }
   return context;
 };
+
