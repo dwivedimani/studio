@@ -52,7 +52,7 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Background image variable */
-    --app-bg-image: url('https://picsum.photos/1920/1080?grayscale&blur=2');
+    --app-bg-image: url('https://picsum.photos/1920/1080?blur=1'); /* Changed from grayscale&blur=2 */
   }
 
   .dark {
@@ -99,9 +99,7 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
     
-    /* Background image variable for dark mode, can be same or different */
-    /* Using the same grayscale blurred image as it's fairly neutral */
-    /* --app-bg-image: url('https://picsum.photos/1920/1080?grayscale&blur=2&random=dark'); */
+    /* Dark mode uses the same background image defined in :root */
   }
 
   * {
