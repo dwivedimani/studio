@@ -6,13 +6,9 @@ import AppHeader from '@/components/medi-seek/AppHeader';
 import AppFooter from '@/components/medi-seek/AppFooter';
 import SymptomForm from '@/components/medi-seek/SymptomForm';
 import MedicineDisplay from '@/components/medi-seek/MedicineDisplay';
-import NearbyServices from '@/components/medi-seek/NearbyServices';
-import FindPathologyLabs from '@/components/medi-seek/FindPathologyLabs';
-import FindHospitals from '@/components/medi-seek/FindHospitals';
 import { handleSymptomAnalysis, type FormState } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ClipboardPenLine, AlertTriangle, Info } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const initialState: FormState = {
   message: '',
@@ -23,7 +19,7 @@ export default function HomePage() {
   const [state, formAction] = useActionState(handleSymptomAnalysis, initialState);
   const [showResults, setShowResults] = useState(false);
   const [key, setKey] = useState(Date.now()); // Key for SymptomForm to reset on successful submission
-  const [suggestedSpecialty, setSuggestedSpecialty] = useState<string | undefined>(undefined);
+  // suggestedSpecialty state is removed as doctor search is on a separate page now
 
   useEffect(() => {
     // Only show results if there's new analysis or errors from the latest submission
@@ -32,9 +28,6 @@ export default function HomePage() {
         if (state.analysis) {
             // Reset form by changing key, which forces remount
             setKey(Date.now());
-            setSuggestedSpecialty(state.analysis.suggestedSpecialty);
-        } else {
-            setSuggestedSpecialty(undefined); // Clear specialty if analysis fails or no specialty suggested
         }
     }
   }, [state.timestamp, state.analysis]);
@@ -42,79 +35,57 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-secondary/30">
       <AppHeader />
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Column 1: Pathology Labs and Hospitals - Scrollable */}
-          <div className="lg:col-span-1 lg:sticky lg:top-28">
-            <ScrollArea className="h-[calc(100vh-9rem)] pr-4"> {/* 9rem = 7rem (top-28) + 2rem (for main's pb-8 / footer clearance) */}
-              <div className="space-y-8">
-                <FindPathologyLabs />
-                <FindHospitals />
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex justify-center">
+        <div className="w-full max-w-2xl space-y-8"> {/* Centered column for symptom analyzer */}
+          <Card className="shadow-xl rounded-xl overflow-hidden">
+            <CardHeader className="bg-card">
+              <div className="flex items-center space-x-4">
+                <ClipboardPenLine className="h-10 w-10 text-accent" />
+                <div>
+                  <CardTitle className="text-2xl sm:text-3xl font-semibold">Symptom Analyzer</CardTitle>
+                  <CardDescription className="text-sm sm:text-base text-muted-foreground mt-1">
+                    Describe your symptoms below. Our AI will provide informational suggestions for over-the-counter medicines and a relevant medical specialty.
+                  </CardDescription>
+                </div>
               </div>
-            </ScrollArea>
-          </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <SymptomForm key={key} formAction={formAction} serverState={state} />
+            </CardContent>
+          </Card>
 
-          {/* Column 2: Symptom Input and Results - This column will scroll with the page */}
-          <div className="lg:col-span-1 space-y-8">
-            <Card className="shadow-xl rounded-xl overflow-hidden">
-              <CardHeader className="bg-card">
-                <div className="flex items-center space-x-4">
-                  <ClipboardPenLine className="h-10 w-10 text-accent" />
+          {showResults && state.analysis && (
+            <Card className="shadow-xl rounded-xl overflow-hidden animate-fadeIn">
+              <CardHeader className="bg-accent/10">
+                 <div className="flex items-center space-x-4">
+                  <Info className="h-10 w-10 text-accent" />
                   <div>
-                    <CardTitle className="text-2xl sm:text-3xl font-semibold">Symptom Analyzer</CardTitle>
-                    <CardDescription className="text-sm sm:text-base text-muted-foreground mt-1">
-                      Describe your symptoms below. Our AI will provide informational suggestions for over-the-counter medicines and a relevant medical specialty.
-                    </CardDescription>
+                      <CardTitle className="text-2xl sm:text-3xl font-semibold text-accent">Analysis Results</CardTitle>
+                      <CardDescription className="text-sm sm:text-base text-accent/90 mt-1">
+                        Please review the suggestions and disclaimer carefully.
+                      </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-6">
-                <SymptomForm key={key} formAction={formAction} serverState={state} />
+                <MedicineDisplay analysis={state.analysis} />
               </CardContent>
             </Card>
-
-            {showResults && state.analysis && (
-              <Card className="shadow-xl rounded-xl overflow-hidden animate-fadeIn">
-                <CardHeader className="bg-accent/10">
-                   <div className="flex items-center space-x-4">
-                    <Info className="h-10 w-10 text-accent" />
-                    <div>
-                        <CardTitle className="text-2xl sm:text-3xl font-semibold text-accent">Analysis Results</CardTitle>
-                        <CardDescription className="text-sm sm:text-base text-accent/90 mt-1">
-                          Please review the suggestions and disclaimer carefully.
-                        </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <MedicineDisplay analysis={state.analysis} />
-                </CardContent>
-              </Card>
-            )}
-            {showResults && state.errors?._form && (
-               <Card className="shadow-lg rounded-xl animate-fadeIn border-destructive bg-destructive/5">
-                <CardHeader>
-                  <CardTitle className="text-destructive flex items-center text-xl sm:text-2xl">
-                    <AlertTriangle className="mr-3 h-7 w-7" />
-                    Analysis Error
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <p className="text-destructive-foreground text-sm sm:text-base">{state.errors._form.join(', ')}</p>
-                  <p className="text-destructive-foreground/80 text-xs mt-2">If the problem persists, please try again later or contact support if available.</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Column 3: Existing NearbyServices (Pharmacies & Doctors) - Scrollable */}
-          <div className="lg:col-span-1 lg:sticky lg:top-28">
-            <ScrollArea className="h-[calc(100vh-9rem)] pr-4">
-               <div className="space-y-8">
-                <NearbyServices suggestedSpecialty={suggestedSpecialty} />
-              </div>
-            </ScrollArea>
-          </div>
+          )}
+          {showResults && state.errors?._form && (
+             <Card className="shadow-lg rounded-xl animate-fadeIn border-destructive bg-destructive/5">
+              <CardHeader>
+                <CardTitle className="text-destructive flex items-center text-xl sm:text-2xl">
+                  <AlertTriangle className="mr-3 h-7 w-7" />
+                  Analysis Error
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <p className="text-destructive-foreground text-sm sm:text-base">{state.errors._form.join(', ')}</p>
+                <p className="text-destructive-foreground/80 text-xs mt-2">If the problem persists, please try again later or contact support if available.</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
       <AppFooter />

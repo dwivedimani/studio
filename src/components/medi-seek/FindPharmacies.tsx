@@ -2,55 +2,53 @@
 "use client";
 
 import React, { useActionState, useRef } from 'react';
-import type { FindPathologyLabsFormState } from '@/lib/actions';
-import { handleFindPathologyLabs } from '@/lib/actions';
+import type { FindPharmaciesFormState } from '@/lib/actions';
+import { handleFindPharmacies } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { TestTube2, Search, Loader2, AlertTriangle, Phone, Clock, Building, AlertCircle, FlaskConical } from 'lucide-react';
+import { MapPin, Search, Loader2, AlertTriangle, Phone, Clock, Building, AlertCircle } from 'lucide-react'; 
 
-const initialPathologyLabsState: FindPathologyLabsFormState = { message: '', timestamp: 0 };
+const initialPharmaciesState: FindPharmaciesFormState = { message: '', timestamp: 0 };
 
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <Button type="submit" disabled={pending} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-      {pending ? 'Searching...' : 'Search Labs'}
+      {pending ? 'Searching...' : 'Search Pharmacies'}
     </Button>
   );
 }
 
-export default function FindPathologyLabs() {
-  const [state, formAction, pending] = useActionState(handleFindPathologyLabs, initialPathologyLabsState);
+export default function FindPharmacies() {
+  const [state, formAction, pending] = useActionState(handleFindPharmacies, initialPharmaciesState);
   const formRef = useRef<HTMLFormElement>(null);
 
   React.useEffect(() => {
-    if (state.data || state.errors) {
-      // formRef.current?.reset(); // Optionally reset form on new data/error
-    }
+    // Optional: Reset form or perform actions on new state.timestamp
   }, [state.timestamp]);
 
   return (
     <Card className="shadow-lg rounded-xl overflow-hidden w-full max-w-lg mx-auto">
       <CardHeader className="bg-primary/20">
         <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
-          <TestTube2 className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
-          Find Pathology Labs
+          <MapPin className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
+          Find Nearby Pharmacies
         </CardTitle>
         <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
-          Enter a location for AI-generated examples of pathology labs. For demonstration purposes.
+          Enter a location to get AI-generated examples of pharmacies. This is for demonstration purposes.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
         <form action={formAction} ref={formRef} className="space-y-4">
           <div>
-            <Label htmlFor="pathology-location" className="text-sm font-medium">Location (e.g., City, Zip Code)</Label>
+            <Label htmlFor="pharmacy-location" className="text-sm font-medium">Location (e.g., City, Zip Code)</Label>
             <Input
-              id="pathology-location"
+              id="pharmacy-location"
               name="location"
-              placeholder="e.g., Metropolis, 54321"
+              placeholder="e.g., Springfield, 12345"
               className="mt-1"
               required
             />
@@ -81,30 +79,20 @@ export default function FindPathologyLabs() {
               {state.data.disclaimer} Searched for: <span className="font-medium">{state.data.searchedLocation}</span>
             </AlertDescription>
           </Alert>
-          <h4 className="text-lg font-semibold mb-2 text-foreground">Generated Lab Results:</h4>
-          {state.data.labs.length > 0 ? (
+          <h4 className="text-lg font-semibold mb-2 text-foreground">Generated Pharmacy Results:</h4>
+          {state.data.pharmacies.length > 0 ? (
             <ul className="space-y-3 w-full">
-              {state.data.labs.map((lab, index) => (
+              {state.data.pharmacies.map((pharmacy, index) => (
                 <li key={index} className="p-3 border rounded-md bg-background shadow-sm">
-                  <p className="font-semibold text-primary-foreground flex items-center"><Building className="w-4 h-4 mr-2 text-primary/80"/>{lab.name}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{lab.address}</p>
-                  {lab.phone && <p className="text-xs text-muted-foreground flex items-center mt-1"><Phone className="w-3 h-3 mr-1.5 text-primary/70"/> {lab.phone}</p>}
-                  {lab.operatingHours && <p className="text-xs text-muted-foreground flex items-center mt-1"><Clock className="w-3 h-3 mr-1.5 text-primary/70"/> {lab.operatingHours}</p>}
-                  {lab.servicesOffered && lab.servicesOffered.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-xs font-medium text-foreground flex items-center"><FlaskConical className="w-3 h-3 mr-1.5 text-primary/70"/> Services Offered:</p>
-                      <ul className="list-disc list-inside pl-1">
-                        {lab.servicesOffered.map(service => (
-                           <li key={service} className="text-xs text-muted-foreground">{service}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  <p className="font-semibold text-primary-foreground flex items-center"><Building className="w-4 h-4 mr-2 text-primary/80"/>{pharmacy.name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{pharmacy.address}</p>
+                  {pharmacy.phone && <p className="text-xs text-muted-foreground flex items-center mt-1"><Phone className="w-3 h-3 mr-1.5 text-primary/70"/> {pharmacy.phone}</p>}
+                  {pharmacy.hours && <p className="text-xs text-muted-foreground flex items-center mt-1"><Clock className="w-3 h-3 mr-1.5 text-primary/70"/> {pharmacy.hours}</p>}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">No pathology lab data generated for this location.</p>
+            <p className="text-sm text-muted-foreground">No pharmacy data generated for this location.</p>
           )}
         </CardFooter>
       )}

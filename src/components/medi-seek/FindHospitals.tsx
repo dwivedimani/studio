@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useActionState, useRef } from 'react';
@@ -48,7 +49,7 @@ export default function FindHospitals() {
 
 
   return (
-    <Card className="shadow-lg rounded-xl overflow-hidden">
+    <Card className="shadow-lg rounded-xl overflow-hidden w-full max-w-lg mx-auto">
       <CardHeader className="bg-primary/20">
         <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
           <HospitalIcon className="mr-3 h-6 w-6 sm:h-7 sm:w-7" /> 
@@ -133,4 +134,3 @@ export default function FindHospitals() {
     </Card>
   );
 }
-
