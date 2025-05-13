@@ -43,7 +43,7 @@ export default function AppHeader() {
         <Menubar className="border-none bg-transparent">
           <MenubarMenu>
             <MenubarTrigger asChild>
-              <Button variant="ghost" className="text-foreground hover:bg-accent/10">
+              <Button variant="ghost" className="text-foreground">
                 <Search className="mr-2 h-4 w-4" /> Find Services
               </Button>
             </MenubarTrigger>
