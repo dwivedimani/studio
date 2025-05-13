@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { ReactNode } from 'react';
@@ -11,7 +10,7 @@ export const availableLanguages = {
   fr: 'Français',
   de: 'Deutsch',
   hi: 'हिन्दी',
-  ar: 'العربية', // Added Arabic
+  ar: 'العربية',
 } as const;
 
 export type LanguageCode = keyof typeof availableLanguages;
@@ -33,7 +32,12 @@ async function fetchTranslations(lang: LanguageCode): Promise<Record<string, str
       console.error(`Failed to load translations for ${lang}: ${response.statusText}`);
       return {};
     }
-    return await response.json();
+    const data = await response.json();
+    if (typeof data !== 'object' || data === null) {
+      console.error(`Translations for ${lang} are not a valid object:`, data);
+      return {};
+    }
+    return data;
   } catch (error) {
     console.error(`Error loading translations for ${lang}:`, error);
     return {};
@@ -46,6 +50,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // This effect runs only on the client side
     const storedLang = localStorage.getItem('appLanguage') as LanguageCode | null;
     let initialLang: LanguageCode = 'en';
     if (storedLang && availableLanguages[storedLang]) {
@@ -65,9 +70,15 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     async function loadAndSetTranslations() {
       let primaryTranslations = await fetchTranslations(language);
+      
       if (!Object.keys(primaryTranslations).length && language !== 'en') {
         console.warn(`Translations for ${language} not found or empty, falling back to English.`);
-        primaryTranslations = await fetchTranslations('en');
+        const englishTranslations = await fetchTranslations('en');
+        if (Object.keys(englishTranslations).length) {
+            primaryTranslations = englishTranslations;
+        } else {
+            console.error("Critical: English translations also failed to load or are empty.");
+        }
       }
       
       if (active) {
@@ -78,15 +89,14 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     loadAndSetTranslations();
     
-    // Set text direction based on language
-    if (language === 'ar') {
-      document.documentElement.dir = 'rtl';
-    } else {
-      document.documentElement.dir = 'ltr';
+    if (typeof document !== 'undefined') {
+      if (language === 'ar') {
+        document.documentElement.dir = 'rtl';
+      } else {
+        document.documentElement.dir = 'ltr';
+      }
+      document.documentElement.lang = language;
     }
-    // Set lang attribute on html tag
-    document.documentElement.lang = language;
-
 
     return () => {
       active = false;
@@ -112,7 +122,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     if (params) {
       Object.keys(params).forEach(paramKey => {
-        translation = translation.replace(`{${paramKey}}`, String(params[paramKey]));
+        const regex = new RegExp(`\\{${paramKey}\\}`, 'g');
+        translation = translation.replace(regex, String(params[paramKey]));
       });
     }
     return translation;
