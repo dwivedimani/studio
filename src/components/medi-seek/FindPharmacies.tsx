@@ -11,14 +11,15 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { MapPin, Search, Loader2, AlertTriangle, Phone, Clock, Building, AlertCircle } from 'lucide-react'; 
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 const initialPharmaciesState: FindPharmaciesFormState = { message: '', timestamp: 0 };
 
 function SubmitButton({ pending }: { pending: boolean }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   return (
     <Button type="submit" disabled={pending} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+      {pending ? <Loader2 className={cn("animate-spin", language === 'ar' ? "ml-2" : "mr-2")} /> : <Search className={cn(language === 'ar' ? "ml-2" : "mr-2")} />}
       {pending ? t('searchingButton') : t('searchButton')}
     </Button>
   );
@@ -48,7 +49,7 @@ export default function FindPharmacies() {
     <Card className="shadow-lg rounded-xl overflow-hidden w-full max-w-lg mx-auto">
       <CardHeader className="bg-primary/20">
         <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
-          <MapPin className="mr-3 h-6 w-6 sm:h-7 sm:w-7" />
+          <MapPin className={cn("h-6 w-6 sm:h-7 sm:w-7", language === 'ar' ? "ml-3" : "mr-3")} />
           {t('findPharmacies')}
         </CardTitle>
         <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
@@ -80,7 +81,7 @@ export default function FindPharmacies() {
         {formErrors && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle className="font-semibold">{t('searchErrorTitle')}</AlertTitle>
+            <AlertTitle className="font-semibold">{t('searchErrorTitle')}</AlertTitle> {/* Add 'searchErrorTitle' to locales */}
             <AlertDescription>{formErrors}</AlertDescription>
           </Alert>
         )}
@@ -88,7 +89,7 @@ export default function FindPharmacies() {
       {state.data && (
         <CardFooter className="flex-col items-start p-4 sm:p-6 border-t bg-card">
           <Alert variant="default" className="mb-4 bg-accent/20 border-accent text-accent-foreground">
-            <AlertTriangle className="h-4 w-4 text-accent" />
+            <AlertTriangle className={cn("h-4 w-4 text-accent", language === 'ar' ? "ml-2" : "mr-2")} />
             <AlertTitle className="font-semibold text-accent-foreground">{t('aiGeneratedDataTitle')}</AlertTitle>
             <AlertDescription className="text-xs">
               {t('aiGeneratedDataDisclaimer', { disclaimer: state.data.disclaimer, location: state.data.searchedLocation, specialtyString: '' })}
@@ -99,10 +100,10 @@ export default function FindPharmacies() {
             <ul className="space-y-3 w-full">
               {state.data.pharmacies.map((pharmacy, index) => (
                 <li key={index} className="p-3 border rounded-md bg-background shadow-sm">
-                  <p className="font-semibold text-primary-foreground flex items-center"><Building className="w-4 h-4 mr-2 text-primary/80"/>{pharmacy.name}</p>
+                  <p className="font-semibold text-primary-foreground flex items-center"><Building className={cn("w-4 h-4 text-primary/80", language === 'ar' ? "ml-2" : "mr-2")}/>{pharmacy.name}</p>
                   <p className="text-xs text-muted-foreground mt-1">{pharmacy.address}</p>
-                  {pharmacy.phone && <p className="text-xs text-muted-foreground flex items-center mt-1"><Phone className="w-3 h-3 mr-1.5 text-primary/70"/> {pharmacy.phone}</p>}
-                  {pharmacy.hours && <p className="text-xs text-muted-foreground flex items-center mt-1"><Clock className="w-3 h-3 mr-1.5 text-primary/70"/> {pharmacy.hours}</p>}
+                  {pharmacy.phone && <p className="text-xs text-muted-foreground flex items-center mt-1"><Phone className={cn("w-3 h-3 text-primary/70", language === 'ar' ? "ml-1.5" : "mr-1.5")}/> {pharmacy.phone}</p>}
+                  {pharmacy.hours && <p className="text-xs text-muted-foreground flex items-center mt-1"><Clock className={cn("w-3 h-3 text-primary/70", language === 'ar' ? "ml-1.5" : "mr-1.5")}/> {pharmacy.hours}</p>}
                 </li>
               ))}
             </ul>

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 interface SymptomFormProps {
   formAction: (payload: FormData) => void;
@@ -17,13 +18,13 @@ interface SymptomFormProps {
 }
 
 function SubmitButton() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground rounded-lg shadow-md transition-all duration-150 ease-in-out transform hover:scale-105">
       {pending ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('analyzingButton')}
+          <Loader2 className={cn("h-4 w-4 animate-spin", language === 'ar' ? "ml-2" : "mr-2")} /> {t('analyzingButton')}
         </>
       ) : (
         t('analyzeSymptomsButton')
@@ -42,7 +43,6 @@ export default function SymptomForm({ formAction, serverState }: SymptomFormProp
     }
   }, [serverState]);
 
-  // Helper to translate error messages if they follow the pattern "key|{json_params}"
   const translateError = (errorMsg: string): string => {
     if (errorMsg.includes('|')) {
       const parts = errorMsg.split('|');
@@ -54,7 +54,7 @@ export default function SymptomForm({ formAction, serverState }: SymptomFormProp
         return t(errorKey); 
       }
     }
-    return t(errorMsg); // If no pipe, assume it's a direct key or plain message
+    return t(errorMsg); 
   };
 
   const symptomErrors = serverState.errors?.symptoms?.map(translateError).join(', ');
@@ -85,10 +85,9 @@ export default function SymptomForm({ formAction, serverState }: SymptomFormProp
           </Alert>
         )}
       </div>
-      <div className="flex justify-end">
+      <div className={cn("flex", language === 'ar' ? "justify-start" : "justify-end")}>
         <SubmitButton />
       </div>
     </form>
   );
 }
-

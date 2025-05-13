@@ -10,6 +10,7 @@ import { handleSymptomAnalysis, type FormState } from '@/lib/actions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ClipboardPenLine, AlertTriangle, Info } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 const initialState: FormState = {
   message: '',
@@ -17,7 +18,7 @@ const initialState: FormState = {
 };
 
 export default function HomePage() {
-  const { t, language } = useLanguage(); // Use language context
+  const { t, language } = useLanguage(); 
   const [state, formAction] = useActionState(handleSymptomAnalysis, initialState);
   const [showResults, setShowResults] = useState(false);
   const [key, setKey] = useState(Date.now()); 
@@ -31,7 +32,6 @@ export default function HomePage() {
     }
   }, [state.timestamp, state.analysis]);
 
-  // Helper to translate error messages if they follow the pattern "key|{json_params}"
   const translateError = (errorMsg: string): string => {
     if (errorMsg.includes('|')) {
       const parts = errorMsg.split('|');
@@ -40,11 +40,10 @@ export default function HomePage() {
         const params = parts[1] ? JSON.parse(parts[1]) : undefined;
         return t(errorKey, params);
       } catch (e) {
-        // If JSON parsing fails, return the original key part or the full message
         return t(errorKey); 
       }
     }
-    return t(errorMsg); // If no pipe, assume it's a direct key or plain message
+    return t(errorMsg); 
   };
   
   const formErrors = state.errors?._form?.map(translateError).join(', ');
@@ -57,7 +56,7 @@ export default function HomePage() {
         <div className="w-full max-w-2xl space-y-8"> 
           <Card className="shadow-xl rounded-xl overflow-hidden">
             <CardHeader className="bg-card">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4 rtl:space-x-reverse">
                 <ClipboardPenLine className="h-10 w-10 text-accent" />
                 <div>
                   <CardTitle className="text-2xl sm:text-3xl font-semibold">{t('symptomAnalyzerTitle')}</CardTitle>
@@ -75,7 +74,7 @@ export default function HomePage() {
           {showResults && state.analysis && (
             <Card className="shadow-xl rounded-xl overflow-hidden animate-fadeIn">
               <CardHeader className="bg-accent/10">
-                 <div className="flex items-center space-x-4">
+                 <div className="flex items-center space-x-4 rtl:space-x-reverse">
                   <Info className="h-10 w-10 text-accent" />
                   <div>
                       <CardTitle className="text-2xl sm:text-3xl font-semibold text-accent">{t('analysisResultsTitle')}</CardTitle>
@@ -94,7 +93,7 @@ export default function HomePage() {
              <Card className="shadow-lg rounded-xl animate-fadeIn border-destructive bg-destructive/5">
               <CardHeader>
                 <CardTitle className="text-destructive flex items-center text-xl sm:text-2xl">
-                  <AlertTriangle className="mr-3 h-7 w-7" />
+                  <AlertTriangle className={cn("h-7 w-7", language === 'ar' ? "ml-3" : "mr-3")} />
                   {t('analysisErrorTitle')}
                 </CardTitle>
               </CardHeader>
@@ -110,4 +109,3 @@ export default function HomePage() {
     </div>
   );
 }
-

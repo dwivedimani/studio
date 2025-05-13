@@ -33,18 +33,18 @@ export default function AppHeader() {
     <header className="bg-card shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center">
-          <StethoscopeIcon className="h-8 w-8 text-accent mr-3" />
+          <StethoscopeIcon className={cn("h-8 w-8 text-accent", language === 'ar' ? "ml-3" : "mr-3")} />
           <h1 className="text-3xl font-bold text-foreground">
             {t('headerTitlePart1')}<span className="text-accent">{t('headerTitlePart2')}</span>
           </h1>
         </Link>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
           <Menubar className="border-none bg-transparent">
             <MenubarMenu>
               <MenubarTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:bg-accent/50 focus:bg-accent/60">
-                  <Search className="mr-2 h-4 w-4" /> {t('findServices')}
+                  <Search className={cn("h-4 w-4", language === 'ar' ? "ml-2" : "mr-2")} /> {t('findServices')}
                 </Button>
               </MenubarTrigger>
               <MenubarContent>
@@ -69,7 +69,7 @@ export default function AppHeader() {
             <MenubarMenu>
               <MenubarTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:bg-accent/50 focus:bg-accent/60">
-                  <Languages className="mr-2 h-4 w-4" /> {availableLanguages[language]}
+                  <Languages className={cn("h-4 w-4", language === 'ar' ? "ml-2" : "mr-2")} /> {availableLanguages[language]}
                 </Button>
               </MenubarTrigger>
               <MenubarContent>
@@ -89,4 +89,3 @@ export default function AppHeader() {
     </header>
   );
 }
-

@@ -11,6 +11,7 @@ export const availableLanguages = {
   fr: 'Français',
   de: 'Deutsch',
   hi: 'हिन्दी',
+  ar: 'العربية', // Added Arabic
 } as const;
 
 export type LanguageCode = keyof typeof availableLanguages;
@@ -65,7 +66,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     async function loadAndSetTranslations() {
       let primaryTranslations = await fetchTranslations(language);
       if (!Object.keys(primaryTranslations).length && language !== 'en') {
-        // Fallback to English if primary language file is empty/failed and it's not English
         console.warn(`Translations for ${language} not found or empty, falling back to English.`);
         primaryTranslations = await fetchTranslations('en');
       }
@@ -78,6 +78,16 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     loadAndSetTranslations();
     
+    // Set text direction based on language
+    if (language === 'ar') {
+      document.documentElement.dir = 'rtl';
+    } else {
+      document.documentElement.dir = 'ltr';
+    }
+    // Set lang attribute on html tag
+    document.documentElement.lang = language;
+
+
     return () => {
       active = false;
     };
@@ -97,7 +107,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     
     if (translation === undefined) {
         // console.warn(`Translation key "${key}" not found for language "${language}".`);
-        return key; // Fallback to key if not found
+        return key; 
     }
 
     if (params) {
@@ -107,10 +117,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     }
     return translation;
   }, [translations, isLoading, language]);
-
-  // Removed the problematic `if (isLoading && ... ) return null;` block.
-  // The app will now render children, and the `t` function will handle displaying "..." or keys
-  // during loading or if translations are missing.
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t, translations, isLoading }}>

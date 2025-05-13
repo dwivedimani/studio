@@ -11,14 +11,15 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { HospitalIcon, Search, Loader2, AlertTriangle, Phone, Building, AlertCircle, HeartPulse, Star } from 'lucide-react'; 
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 const initialHospitalsState: FindHospitalsFormState = { message: '', timestamp: 0 };
 
 function SubmitButton({ pending }: { pending: boolean }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   return (
     <Button type="submit" disabled={pending} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+      {pending ? <Loader2 className={cn("animate-spin", language === 'ar' ? "ml-2" : "mr-2")} /> : <Search className={cn(language === 'ar' ? "ml-2" : "mr-2")} />}
       {pending ? t('searchingButton') : t('searchButton')}
     </Button>
   );
@@ -52,7 +53,7 @@ export default function FindHospitals() {
       <div className="flex items-center">
         {[...Array(fullStars)].map((_, i) => <Star key={`full-${i}`} className="w-3 h-3 fill-yellow-400 text-yellow-400" />)}
         {[...Array(emptyStars)].map((_, i) => <Star key={`empty-${i}`} className="w-3 h-3 text-gray-300" />)}
-         <span className="ml-1 text-xs text-muted-foreground">({rating.toFixed(1)})</span>
+         <span className={cn("text-xs text-muted-foreground", language === 'ar' ? "mr-1" : "ml-1")}>({rating.toFixed(1)})</span>
       </div>
     );
   };
@@ -61,7 +62,7 @@ export default function FindHospitals() {
     <Card className="shadow-lg rounded-xl overflow-hidden w-full max-w-lg mx-auto">
       <CardHeader className="bg-primary/20">
         <CardTitle className="text-xl sm:text-2xl text-primary-foreground flex items-center">
-          <HospitalIcon className="mr-3 h-6 w-6 sm:h-7 sm:w-7" /> 
+          <HospitalIcon className={cn("h-6 w-6 sm:h-7 sm:w-7", language === 'ar' ? "ml-3" : "mr-3")} /> 
           {t('findHospitals')}
         </CardTitle>
         <CardDescription className="text-primary-foreground/80 text-xs sm:text-sm">
@@ -93,7 +94,7 @@ export default function FindHospitals() {
         {formErrors && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle className="font-semibold">{t('searchErrorTitle')}</AlertTitle>
+            <AlertTitle className="font-semibold">{t('searchErrorTitle')}</AlertTitle> {/* Add 'searchErrorTitle' to locales if not present */}
             <AlertDescription>{formErrors}</AlertDescription>
           </Alert>
         )}
@@ -101,7 +102,7 @@ export default function FindHospitals() {
       {state.data && (
         <CardFooter className="flex-col items-start p-4 sm:p-6 border-t bg-card">
           <Alert variant="default" className="mb-4 bg-accent/20 border-accent text-accent-foreground">
-            <AlertTriangle className="h-4 w-4 text-accent" />
+            <AlertTriangle className={cn("h-4 w-4 text-accent", language === 'ar' ? "ml-2" : "mr-2")} />
             <AlertTitle className="font-semibold text-accent-foreground">{t('aiGeneratedDataTitle')}</AlertTitle>
             <AlertDescription className="text-xs">
                {t('aiGeneratedDataDisclaimer', { disclaimer: state.data.disclaimer, location: state.data.searchedLocation, specialtyString: '' })}
@@ -113,19 +114,23 @@ export default function FindHospitals() {
               {state.data.hospitals.map((hospital, index) => (
                 <li key={index} className="p-3 border rounded-md bg-background shadow-sm">
                   <div className="flex justify-between items-start">
-                    <p className="font-semibold text-primary-foreground flex items-center"><Building className="w-4 h-4 mr-2 text-primary/80"/>{hospital.name}</p>
+                    <p className="font-semibold text-primary-foreground flex items-center"><Building className={cn("w-4 h-4 text-primary/80", language === 'ar' ? "ml-2" : "mr-2")}/>{hospital.name}</p>
                     {hospital.rating && renderStars(hospital.rating)}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{hospital.address}</p>
-                  {hospital.phone && <p className="text-xs text-muted-foreground flex items-center mt-1"><Phone className="w-3 h-3 mr-1.5 text-primary/70"/> {hospital.phone}</p>}
+                  {hospital.phone && <p className="text-xs text-muted-foreground flex items-center mt-1"><Phone className={cn("w-3 h-3 text-primary/70", language === 'ar' ? "ml-1.5" : "mr-1.5")}/> {hospital.phone}</p>}
                   {hospital.emergencyServices !== undefined && (
                     <p className={`text-xs flex items-center mt-1 ${hospital.emergencyServices ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-                      <HeartPulse className="w-3 h-3 mr-1.5"/> Emergency Services: {hospital.emergencyServices ? 'Available' : 'Not Specified/Unavailable'}
+                      <HeartPulse className={cn("w-3 h-3", language === 'ar' ? "ml-1.5" : "mr-1.5")}/> 
+                      {language === 'ar' ? 'خدمات الطوارئ: ' : 'Emergency Services: '}
+                      {hospital.emergencyServices ? (language === 'ar' ? 'متوفرة' : 'Available') : (language === 'ar' ? 'غير محدد/غير متوفرة' : 'Not Specified/Unavailable')}
                     </p>
                   )}
                   {hospital.specialties && hospital.specialties.length > 0 && (
                     <div className="mt-2">
-                      <p className="text-xs font-medium text-foreground">Key Specialties:</p>
+                      <p className="text-xs font-medium text-foreground">
+                        {language === 'ar' ? 'التخصصات الرئيسية:' : 'Key Specialties:'}
+                      </p>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {hospital.specialties.map(spec => (
                           <span key={spec} className="text-xs bg-primary/20 text-primary-foreground px-1.5 py-0.5 rounded-full">{spec}</span>
