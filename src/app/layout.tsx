@@ -5,7 +5,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
-import { Suspense } from 'react'; // Import Suspense
+import { Suspense } from 'react';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,6 +27,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     // The lang attribute will be set dynamically by LanguageProvider
     <html> 
@@ -35,9 +37,9 @@ export default function RootLayout({
         data-ai-hint="medical technology" 
       >
         <LanguageProvider>
-          {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          {process.env.NODE_ENV === 'production' && gaMeasurementId && (
             <Suspense fallback={null}> {/* Wrap GoogleAnalytics in Suspense */}
-              <GoogleAnalytics />
+              <GoogleAnalytics measurementId={gaMeasurementId} />
             </Suspense>
           )}
           {children}
@@ -47,4 +49,3 @@ export default function RootLayout({
     </html>
   );
 }
-

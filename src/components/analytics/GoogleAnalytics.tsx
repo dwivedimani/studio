@@ -5,17 +5,6 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import Script from 'next/script';
 import { useEffect } from 'react';
 
-export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-
-// https://developers.google.com/analytics/devguides/collection/gtagjs/pages
-export const pageview = (url: URL) => {
-  if (typeof window.gtag === 'function' && GA_MEASUREMENT_ID) {
-    window.gtag('config', GA_MEASUREMENT_ID, {
-      page_path: url.pathname + url.search, // Use pathname + search for consistency
-    });
-  }
-};
-
 // https://developers.google.com/analytics/devguides/collection/gtagjs/events
 interface EventProps {
   action: string;
@@ -23,36 +12,52 @@ interface EventProps {
   label: string;
   value: number;
 }
-export const event = ({ action, category, label, value }: EventProps) => {
-  if (typeof window.gtag === 'function' && GA_MEASUREMENT_ID) {
-    window.gtag('event', action, {
-      event_category: category,
-      event_label: label,
-      value: value,
+
+// Modified event function to accept measurementId
+export const event = (props: EventProps, measurementId: string | undefined) => {
+  if (typeof window.gtag === 'function' && measurementId) {
+    window.gtag('event', props.action, {
+      event_category: props.category,
+      event_label: props.label,
+      value: props.value,
     });
   }
 };
 
-export default function GoogleAnalytics() {
+interface GoogleAnalyticsProps {
+  measurementId: string; // This prop is now required
+}
+
+export default function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Internal pageview function using the measurementId prop
+  const trackPageview = (url: URL) => {
+    if (typeof window.gtag === 'function' && measurementId) {
+      window.gtag('config', measurementId, {
+        page_path: url.pathname + url.search,
+      });
+    }
+  };
+
   useEffect(() => {
-    if (!GA_MEASUREMENT_ID || process.env.NODE_ENV !== 'production') {
+    // Component should only be rendered in production with a valid ID by layout.tsx,
+    // but this check adds an extra layer of safety.
+    if (process.env.NODE_ENV !== 'production' || !measurementId) {
       return;
     }
-    // Construct the full URL, including search parameters
-    // The 'base' part of the URL (window.location.origin) is only needed for the URL constructor,
-    // but GA uses page_path relative to the domain.
+
     const url = new URL(pathname, window.location.origin);
     searchParams.forEach((value, key) => {
       url.searchParams.append(key, value);
     });
-    pageview(url);
-  }, [pathname, searchParams]);
+    trackPageview(url);
+  }, [pathname, searchParams, measurementId]); // Added measurementId to dependency array
 
-  // Render the scripts only in production and if GA_MEASUREMENT_ID is set
-  if (process.env.NODE_ENV !== 'production' || !GA_MEASUREMENT_ID) {
+  // Render scripts only in production and if measurementId is provided.
+  // This check is somewhat redundant if layout.tsx already handles it, but ensures component robustness.
+  if (process.env.NODE_ENV !== 'production' || !measurementId) {
     return null;
   }
 
@@ -60,7 +65,7 @@ export default function GoogleAnalytics() {
     <>
       <Script
         strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
       />
       <Script
         id="google-analytics"
@@ -70,7 +75,7 @@ export default function GoogleAnalytics() {
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}', {
+            gtag('config', '${measurementId}', {
               page_path: window.location.pathname + window.location.search,
             });
           `,
@@ -79,4 +84,3 @@ export default function GoogleAnalytics() {
     </>
   );
 }
-
