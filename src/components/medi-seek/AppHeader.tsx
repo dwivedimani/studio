@@ -68,7 +68,7 @@ export default function AppHeader() {
           <Menubar className="border-none bg-transparent">
             <MenubarMenu>
               <MenubarTrigger asChild>
-                <Button variant="ghost" className="text-foreground hover:bg-accent/50 focus:bg-accent/60">
+                <Button className="bg-accent text-accent-foreground hover:bg-accent/80 data-[state=open]:bg-accent/70 focus:bg-accent/70 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-background">
                   <Languages className={cn("h-4 w-4", language === 'ar' ? "ml-2" : "mr-2")} /> {availableLanguages[language]}
                 </Button>
               </MenubarTrigger>
