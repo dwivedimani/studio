@@ -19,11 +19,15 @@ export default function AppHeader() {
 
   const getMenuItemClass = (href: string) => {
     if (pathname === href) {
-      // Apply these classes if the current path matches the link's href
-      // These will be merged with MenubarItem's default classes
-      return "bg-accent/10 text-accent-foreground font-medium"; 
+      // Stronger highlight for active item, with a subtle hover effect.
+      // The text color will be `text-accent-foreground`.
+      // The background will be `bg-accent`.
+      // On hover, the background will be `bg-accent/90` (accent color with 90% opacity).
+      return "bg-accent text-accent-foreground font-medium hover:bg-accent/90";
     }
-    return ""; // No extra classes if not active
+    // For non-active items, rely on default MenubarItem styles for hover/focus.
+    // MenubarItem's default focused style is `focus:bg-accent focus:text-accent-foreground`.
+    return ""; 
   };
 
   return (
