@@ -44,13 +44,13 @@ export default function AppHeader() {
           <Menubar className="border-none bg-transparent">
              <MenubarMenu>
               <MenubarTrigger asChild>
-                <Button variant="ghost" className={cn("text-foreground hover:bg-accent/50 data-[state=open]:bg-accent/60 focus:bg-accent/60", getMenuItemClass("/blog", true) && "bg-accent/10")}>
+                <Button variant="ghost" className={cn("text-foreground hover:bg-accent/50 data-[state=open]:bg-accent/60 focus:bg-accent/60", getMenuItemClass("/blogs", true) && "bg-accent/10")}>
                   <NewspaperIcon className={cn("h-4 w-4", language === 'ar' ? "ml-2" : "mr-2")} /> {t('blogMenuTitle')}
                 </Button>
               </MenubarTrigger>
               <MenubarContent>
-                <MenubarItem asChild className={cn(getMenuItemClass("/blog"))}>
-                  <Link href="/blog">{t('allPostsMenuLink')}</Link>
+                <MenubarItem asChild className={cn(getMenuItemClass("/blogs"))}>
+                  <Link href="/blogs">{t('allPostsMenuLink')}</Link>
                 </MenubarItem>
                 {/* Add more blog related links here if needed, e.g., categories or admin access later */}
               </MenubarContent>
