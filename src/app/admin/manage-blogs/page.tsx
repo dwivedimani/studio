@@ -124,9 +124,8 @@ export default function ManageBlogsPage() {
     toast({
       title: t('successTitle'),
       description: message,
-      variant: 'default', // Or a custom success variant if you have one
+      variant: 'default', 
     });
-    // Re-fetch posts to update the list after deletion
     async function refetchPosts() {
       const fetchedPosts = await getAllPosts();
       setPosts(fetchedPosts);
@@ -163,6 +162,18 @@ export default function ManageBlogsPage() {
           </Card>
         ))}
       </div>
+    );
+  }
+
+  // Defensive check for posts
+  if (!Array.isArray(posts)) {
+    console.error("ManageBlogsPage: 'posts' is not an array after loading.", posts);
+    return (
+      <Card className="shadow-lg rounded-xl text-center p-8">
+        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+        <CardTitle>{t('errorTitle')}</CardTitle>
+        <CardDescription>{t('manageBlogsErrorLoading')}</CardDescription>
+      </Card>
     );
   }
 
