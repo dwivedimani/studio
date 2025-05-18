@@ -8,17 +8,18 @@ import { ArrowLeft, CalendarDays, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns'; // For formatting dates
+// import { useLanguage } from '@/contexts/LanguageContext'; // Added for potential future use
 
 // For dynamic metadata
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const post = await getPostBySlug(params.slug);
   if (!post) {
     return {
-      title: 'Post Not Found - MediSeek Blog',
+      title: 'Post Not Found - MediSeek Blog', // Consider localizing
     }
   }
   return {
-    title: `${post.title} - MediSeek Blog`,
+    title: `${post.title} - MediSeek Blog`, // Consider localizing
     description: post.excerpt || post.content.substring(0, 160),
   }
 }
@@ -33,6 +34,7 @@ export async function generateStaticParams() {
 
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  // const { t } = useLanguage(); // If needed for translated static text like "Back to Blog"
   const post: BlogPost | undefined = await getPostBySlug(params.slug);
 
   if (!post) {
@@ -50,7 +52,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           <CardHeader className="bg-card p-6 sm:p-8">
             <Link href="/blogs" className="inline-flex items-center text-sm text-accent hover:underline mb-6 rtl:space-x-reverse">
               <ArrowLeft className="h-4 w-4 mr-2 rtl:mr-0 rtl:ml-2" />
-              Back to Blog
+              Back to Blog 
             </Link>
             <CardTitle className="text-3xl sm:text-4xl font-bold text-foreground leading-tight">
               {post.title}

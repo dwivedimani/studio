@@ -8,13 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Newspaper, CalendarDays, UserCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext'; // Added for potential future use
 
 export const metadata = {
-  title: 'MediSeek Blog - Health Insights and News',
+  title: 'MediSeek Blog - Health Insights and News', // Consider making this dynamic with translations
   description: 'Read the latest articles, insights, and news on health, wellness, and medical topics from MediSeek.',
 };
 
 export default async function BlogListPage() {
+  // const { t } = useLanguage(); // If needed for translated static text
   const posts: BlogPost[] = await getAllPosts();
 
   return (
