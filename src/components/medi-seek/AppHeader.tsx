@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { StethoscopeIcon, Search, Languages, Check } from 'lucide-react';
+import { StethoscopeIcon, Search, Languages, Check, NewspaperIcon } from 'lucide-react';
 import {
   Menubar,
   MenubarContent,
@@ -22,8 +22,9 @@ export default function AppHeader() {
   const pathname = usePathname();
   const { language, setLanguage, t } = useLanguage();
 
-  const getMenuItemClass = (href: string) => {
-    if (pathname === href) {
+  const getMenuItemClass = (href: string, isParentActiveCheck?: boolean) => {
+    const isActive = isParentActiveCheck ? pathname.startsWith(href) : pathname === href;
+    if (isActive) {
       return "bg-accent text-accent-foreground font-medium hover:bg-accent/90";
     }
     return "hover:bg-accent/10"; 
@@ -41,6 +42,20 @@ export default function AppHeader() {
 
         <div className="flex items-center space-x-2 rtl:space-x-reverse">
           <Menubar className="border-none bg-transparent">
+             <MenubarMenu>
+              <MenubarTrigger asChild>
+                <Button variant="ghost" className={cn("text-foreground hover:bg-accent/50 data-[state=open]:bg-accent/60 focus:bg-accent/60", getMenuItemClass("/blog", true) && "bg-accent/10")}>
+                  <NewspaperIcon className={cn("h-4 w-4", language === 'ar' ? "ml-2" : "mr-2")} /> {t('blogMenuTitle')}
+                </Button>
+              </MenubarTrigger>
+              <MenubarContent>
+                <MenubarItem asChild className={cn(getMenuItemClass("/blog"))}>
+                  <Link href="/blog">{t('allPostsMenuLink')}</Link>
+                </MenubarItem>
+                {/* Add more blog related links here if needed, e.g., categories or admin access later */}
+              </MenubarContent>
+            </MenubarMenu>
+
             <MenubarMenu>
               <MenubarTrigger asChild>
                 <Button variant="ghost" className="text-foreground hover:bg-accent/50 data-[state=open]:bg-accent/60 focus:bg-accent/60">
