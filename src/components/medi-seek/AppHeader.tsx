@@ -27,7 +27,7 @@ export default function AppHeader() {
     if (isActive) {
       return "bg-accent text-accent-foreground font-medium hover:bg-accent/90";
     }
-    return "hover:bg-accent/10"; 
+    return "hover:bg-accent/50"; // Changed from hover:bg-accent/10
   };
 
   return (
@@ -46,8 +46,8 @@ export default function AppHeader() {
               <Button
                 variant="ghost"
                 className={cn(
-                  "text-foreground hover:bg-accent/50 focus:bg-accent/60", // Base styles
-                  getMenuItemClass("/blogs", true) // Active/non-active hover styles
+                  "text-foreground hover:bg-accent/50 focus:bg-accent/60", 
+                  getMenuItemClass("/blogs", true) 
                 )}
               >
                 <NewspaperIcon className={cn("h-4 w-4", language === 'ar' ? "ml-2" : "mr-2")} /> {t('blogsPageLink')}
