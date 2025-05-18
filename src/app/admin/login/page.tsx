@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useActionState } from 'react'; 
+import React, { useActionState, Suspense } from 'react'; 
 import { handleAdminLogin, type AdminLoginFormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/medi-seek/AppHeader'; 
 import AppFooter from '@/components/medi-seek/AppFooter'; 
-import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+import { useSearchParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const initialLoginState: AdminLoginFormState = { message: '', timestamp: 0 };
 
@@ -27,11 +28,11 @@ function SubmitButton({ pending }: { pending: boolean }) {
   );
 }
 
-export default function AdminLoginPage() {
+function AdminLoginContent() {
   const { t, language } = useLanguage();
   const [state, formAction, pending] = useActionState(handleAdminLogin, initialLoginState);
-  const searchParams = useSearchParams(); // Get search params
-  const redirectTo = searchParams.get('redirectTo'); // Get the redirectTo query parameter
+  const searchParams = useSearchParams(); 
+  const redirectTo = searchParams.get('redirectTo'); 
 
   const translateError = (errorMsgKey: string): string => {
     if (errorMsgKey.includes('|')) {
@@ -50,7 +51,6 @@ export default function AdminLoginPage() {
   const formErrors = state.errors?._form?.map(translateError).join(', ');
   const generalMessage = state.message && !formErrors && state.message !== 'validationFailedMessage' && state.message !== 'adminLoginSuccess' ? t(state.message) : '';
 
-
   return (
     <div className="flex flex-col min-h-screen bg-secondary/30">
       <AppHeader />
@@ -63,7 +63,6 @@ export default function AdminLoginPage() {
           </CardHeader>
           <CardContent className="p-6">
             <form action={formAction} className="space-y-6">
-              {/* Add a hidden input for redirectTo */}
               {redirectTo && (
                 <input type="hidden" name="redirectTo" value={redirectTo} />
               )}
@@ -125,5 +124,42 @@ export default function AdminLoginPage() {
       </main>
       <AppFooter />
     </div>
+  );
+}
+
+function AdminLoginLoadingSkeleton() {
+  return (
+    <div className="flex flex-col min-h-screen bg-secondary/30">
+      <Skeleton className="h-16 w-full" /> {/* Header placeholder */}
+      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-12 flex justify-center items-center">
+        <div className="w-full max-w-md space-y-6">
+          <div className="bg-card shadow-xl rounded-xl p-6 text-center">
+            <Skeleton className="h-12 w-12 rounded-full mx-auto mb-3" />
+            <Skeleton className="h-8 w-3/4 mx-auto mb-2" />
+            <Skeleton className="h-4 w-full mx-auto" />
+          </div>
+          <div className="bg-card shadow-xl rounded-xl p-6 space-y-6">
+            <div>
+              <Skeleton className="h-4 w-1/4 mb-1" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-1/4 mb-1" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+      </main>
+      <Skeleton className="h-20 w-full" /> {/* Footer placeholder */}
+    </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<AdminLoginLoadingSkeleton />}>
+      <AdminLoginContent />
+    </Suspense>
   );
 }
