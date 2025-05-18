@@ -292,6 +292,7 @@ export async function handleFindHospitals(
 const AdminLoginSchema = z.object({
   username: z.string().min(1, { message: 'adminUsernameRequired' }),
   password: z.string().min(1, { message: 'adminPasswordRequired' }),
+  redirectTo: z.string().optional(), // Add redirectTo
 });
 
 export interface AdminLoginFormState {
@@ -311,6 +312,7 @@ export async function handleAdminLogin(
   const rawFormData = {
     username: formData.get('username'),
     password: formData.get('password'),
+    redirectTo: formData.get('redirectTo'), // Get redirectTo from form
   };
 
   const validatedFields = AdminLoginSchema.safeParse(rawFormData);
@@ -323,7 +325,7 @@ export async function handleAdminLogin(
     };
   }
 
-  const { username, password } = validatedFields.data;
+  const { username, password, redirectTo } = validatedFields.data;
 
   const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'Adminuser';
   const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Samsung123#_mcn';
@@ -336,7 +338,13 @@ export async function handleAdminLogin(
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
-    redirect('/admin/dashboard'); 
+
+    // Redirect to redirectTo if it's a valid admin path, otherwise to dashboard
+    if (redirectTo && redirectTo.startsWith('/admin/') && redirectTo !== '/admin/login') {
+      redirect(redirectTo);
+    } else {
+      redirect('/admin/dashboard'); 
+    }
   } else {
     return {
       message: 'adminLoginFailed', 
@@ -399,6 +407,10 @@ export async function handleAddPost(
 
   try {
     await saveNewPost(validatedFields.data);
+    revalidatePath('/admin/manage-blogs'); // Revalidate manage blogs page
+    revalidatePath('/blogs'); // Revalidate public blogs list page
+    // Potentially revalidate individual blog post if slug generation is predictable
+    // or revalidatePath('/blogs/[slug]', 'page') - but this is harder without knowing the slug
     return {
       message: 'blogPostCreatedSuccess',
       timestamp: Date.now(),
@@ -445,6 +457,7 @@ export async function handleDeletePost(
     const deleted = await removePost(postId);
     if (deleted) {
       revalidatePath('/admin/manage-blogs');
+      revalidatePath('/blogs');
       return {
         message: 'blogPostDeletedSuccess',
         timestamp: Date.now(),

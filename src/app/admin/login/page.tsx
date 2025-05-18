@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useActionState } from 'react'; // Removed useEffect and useRouter
+import React, { useActionState } from 'react'; 
 import { handleAdminLogin, type AdminLoginFormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import AppHeader from '@/components/medi-seek/AppHeader'; 
 import AppFooter from '@/components/medi-seek/AppFooter'; 
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 
 const initialLoginState: AdminLoginFormState = { message: '', timestamp: 0 };
 
@@ -28,18 +29,11 @@ function SubmitButton({ pending }: { pending: boolean }) {
 
 export default function AdminLoginPage() {
   const { t, language } = useLanguage();
-  // No router needed here if redirect happens from server action
   const [state, formAction, pending] = useActionState(handleAdminLogin, initialLoginState);
-
-  // Removed useEffect for client-side redirect, as server action will handle it.
-  // useEffect(() => {
-  //   if (state.message === 'adminLoginSuccess') {
-  //     router.push('/admin/create-post'); 
-  //   }
-  // }, [state.message, router]);
+  const searchParams = useSearchParams(); // Get search params
+  const redirectTo = searchParams.get('redirectTo'); // Get the redirectTo query parameter
 
   const translateError = (errorMsgKey: string): string => {
-    // Assuming error messages from action are already keys or include params
     if (errorMsgKey.includes('|')) {
       const parts = errorMsgKey.split('|');
       const errorKey = parts[0];
@@ -54,7 +48,6 @@ export default function AdminLoginPage() {
   const usernameErrors = state.errors?.username?.map(translateError).join(', ');
   const passwordErrors = state.errors?.password?.map(translateError).join(', ');
   const formErrors = state.errors?._form?.map(translateError).join(', ');
-  // General message display (e.g., for adminLoginFailed if not using _form errors specifically for that)
   const generalMessage = state.message && !formErrors && state.message !== 'validationFailedMessage' && state.message !== 'adminLoginSuccess' ? t(state.message) : '';
 
 
@@ -70,6 +63,10 @@ export default function AdminLoginPage() {
           </CardHeader>
           <CardContent className="p-6">
             <form action={formAction} className="space-y-6">
+              {/* Add a hidden input for redirectTo */}
+              {redirectTo && (
+                <input type="hidden" name="redirectTo" value={redirectTo} />
+              )}
               <div>
                 <Label htmlFor="username">{t('usernameLabel')}</Label>
                 <Input
@@ -114,7 +111,7 @@ export default function AdminLoginPage() {
                   <AlertDescription>{formErrors}</AlertDescription>
                 </Alert>
               )}
-              {generalMessage && !formErrors && ( // Display general error messages if no specific form errors
+              {generalMessage && !formErrors && ( 
                  <Alert variant="destructive" className="mt-1">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>{t('loginFailedErrorTitle')}</AlertTitle>
