@@ -113,9 +113,16 @@ export default function ManageBlogsPage() {
   useEffect(() => {
     async function fetchPosts() {
       setIsLoading(true);
-      const fetchedPosts = await getAllPosts();
-      setPosts(fetchedPosts);
-      setIsLoading(false);
+      try {
+        const fetchedPostsData = await getAllPosts();
+        // Ensure that setPosts always receives an array
+        setPosts(fetchedPostsData || []);
+      } catch (error) {
+        console.error("ManageBlogsPage: Error fetching posts in useEffect:", error);
+        setPosts([]); // Fallback to empty array on error
+      } finally {
+        setIsLoading(false);
+      }
     }
     fetchPosts();
   }, []);
@@ -128,7 +135,7 @@ export default function ManageBlogsPage() {
     });
     async function refetchPosts() {
       const fetchedPosts = await getAllPosts();
-      setPosts(fetchedPosts);
+      setPosts(fetchedPosts || []); // Also ensure an array here
     }
     refetchPosts();
   };
@@ -165,9 +172,10 @@ export default function ManageBlogsPage() {
     );
   }
 
-  // Defensive check for posts
+  // Defensive check for posts - this should ideally not be triggered if useEffect is robust
   if (!Array.isArray(posts)) {
-    console.error("ManageBlogsPage: 'posts' is not an array after loading.", posts);
+    // This console.error was the source of the reported error log
+    console.error("ManageBlogsPage: 'posts' state is not an array after loading. Current value:", posts);
     return (
       <Card className="shadow-lg rounded-xl text-center p-8">
         <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
