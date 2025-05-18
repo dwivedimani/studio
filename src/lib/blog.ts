@@ -30,7 +30,8 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | undefined>
   }
 }
 
-export function generateSlug(title: string): string {
+// Made generateSlug a local helper function, not exported
+function generateSlug(title: string): string {
   return title
     .toLowerCase()
     .replace(/\s+/g, '-') // Replace spaces with -

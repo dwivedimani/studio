@@ -8,23 +8,28 @@ import { findPathologyLabs, type FindPathologyLabsInput, type FindPathologyLabsO
 import { findHospitals, type FindHospitalsInput, type FindHospitalsOutput } from '@/ai/flows/find-hospitals-flow';
 import { z } from 'zod';
 import type { LanguageCode } from '@/contexts/LanguageContext'; // Import LanguageCode
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { addPost as saveNewPost, type NewBlogPost } from '@/lib/blog';
 
+
+// Symptom Analysis
 const SymptomSchema = z.object({
   symptoms: z.string().min(10, { message: 'validationMinChars|{"count":10}' }).max(1000, {message: 'validationMaxChars|{"count":1000}'}),
 });
 
 export interface FormState {
   message: string;
-  analysis?: AnalyzeSymptomsOutput; 
+  analysis?: AnalyzeSymptomsOutput;
   errors?: {
     symptoms?: string[];
-    _form?: string[]; 
+    _form?: string[];
   };
-  timestamp: number; 
+  timestamp: number;
 }
 
 export async function handleSymptomAnalysis(
-  prevState: FormState, 
+  prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
   const lang = (formData.get('language') as LanguageCode) || 'en';
@@ -43,14 +48,14 @@ export async function handleSymptomAnalysis(
   }
 
   try {
-    const input: AnalyzeSymptomsInput = { 
+    const input: AnalyzeSymptomsInput = {
       symptoms: validatedFields.data.symptoms,
-      language: lang 
+      language: lang
     };
     const result = await analyzeSymptoms(input);
     return {
-      message: 'Symptoms analyzed successfully.', // This message is not typically translated as it's for internal state logic
-      analysis: result, 
+      message: 'Symptoms analyzed successfully.',
+      analysis: result,
       timestamp: Date.now(),
     };
   } catch (error) {
@@ -64,13 +69,13 @@ export async function handleSymptomAnalysis(
   }
 }
 
-
+// Location-based searches
 const LocationSchema = z.object({
   location: z.string().min(3, { message: 'validationLocationMinChars|{"count":3}' }).max(100, {message: 'validationLocationMaxChars|{"count":100}'}),
 });
 
 const DoctorLocationSchema = LocationSchema.extend({
-    specialty: z.string().max(100, {message: 'validationSpecialtyMaxChars|{"count":100}'}).optional().nullable(), 
+    specialty: z.string().max(100, {message: 'validationSpecialtyMaxChars|{"count":100}'}).optional().nullable(),
 });
 
 
@@ -104,7 +109,7 @@ export async function handleFindPharmacies(
   }
 
   try {
-    const input: FindPharmaciesInput = { 
+    const input: FindPharmaciesInput = {
       location: validatedFields.data.location,
       language: lang
     };
@@ -143,9 +148,9 @@ export async function handleFindDoctors(
   const lang = (formData.get('language') as LanguageCode) || 'en';
   const rawFormData = {
     location: formData.get('location'),
-    specialty: formData.get('specialty') || undefined, 
+    specialty: formData.get('specialty') || undefined,
   };
-  
+
   const validatedFields = DoctorLocationSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
@@ -155,10 +160,10 @@ export async function handleFindDoctors(
       timestamp: Date.now(),
     };
   }
-  
-  const input: FindDoctorsInput = { 
+
+  const input: FindDoctorsInput = {
     location: validatedFields.data.location,
-    specialty: validatedFields.data.specialty ? validatedFields.data.specialty : undefined, 
+    specialty: validatedFields.data.specialty ? validatedFields.data.specialty : undefined,
     language: lang,
   };
 
@@ -180,7 +185,6 @@ export async function handleFindDoctors(
   }
 }
 
-// State for Find Pathology Labs
 export interface FindPathologyLabsFormState {
   message: string;
   data?: FindPathologyLabsOutput;
@@ -200,7 +204,7 @@ export async function handleFindPathologyLabs(
     location: formData.get('location'),
   };
 
-  const validatedFields = LocationSchema.safeParse(rawFormData); 
+  const validatedFields = LocationSchema.safeParse(rawFormData);
 
   if (!validatedFields.success) {
     return {
@@ -211,9 +215,9 @@ export async function handleFindPathologyLabs(
   }
 
   try {
-    const input: FindPathologyLabsInput = { 
+    const input: FindPathologyLabsInput = {
       location: validatedFields.data.location,
-      language: lang 
+      language: lang
     };
     const result = await findPathologyLabs(input);
     return {
@@ -232,7 +236,6 @@ export async function handleFindPathologyLabs(
   }
 }
 
-// State for Find Hospitals
 export interface FindHospitalsFormState {
   message: string;
   data?: FindHospitalsOutput;
@@ -263,9 +266,9 @@ export async function handleFindHospitals(
   }
 
   try {
-    const input: FindHospitalsInput = { 
+    const input: FindHospitalsInput = {
       location: validatedFields.data.location,
-      language: lang 
+      language: lang
     };
     const result = await findHospitals(input);
     return {
@@ -284,3 +287,137 @@ export async function handleFindHospitals(
   }
 }
 
+// Admin Authentication
+const AdminLoginSchema = z.object({
+  username: z.string().min(1, { message: 'adminUsernameRequired' }),
+  password: z.string().min(1, { message: 'adminPasswordRequired' }),
+});
+
+export interface AdminLoginFormState {
+  message: string;
+  errors?: {
+    username?: string[];
+    password?: string[];
+    _form?: string[];
+  };
+  timestamp: number;
+}
+
+export async function handleAdminLogin(
+  prevState: AdminLoginFormState,
+  formData: FormData
+): Promise<AdminLoginFormState> {
+  const rawFormData = {
+    username: formData.get('username'),
+    password: formData.get('password'),
+  };
+
+  const validatedFields = AdminLoginSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+    return {
+      message: 'validationFailedMessage',
+      errors: validatedFields.error.flatten().fieldErrors,
+      timestamp: Date.now(),
+    };
+  }
+
+  const { username, password } = validatedFields.data;
+
+  // IMPORTANT: Hardcoded credentials - NOT FOR PRODUCTION
+  const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'Adminuser';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Samsung123#_mcn';
+
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    // Set session cookie
+    cookies().set('admin-session', 'true', { // In a real app, use a secure token
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 1 week
+    });
+    // Redirect to admin dashboard or create post page
+    // For now, we don't have a create-post page yet, so this redirect won't work as expected.
+    // Let's redirect to /admin for now, which middleware will then handle if we create /admin/create-post next.
+    // Or better, let the page handle the redirect via a success message.
+    // For now, just return success and let middleware handle the next navigation.
+    return { message: 'adminLoginSuccess', timestamp: Date.now() };
+  } else {
+    return {
+      message: 'adminLoginFailed',
+      errors: { _form: ['adminInvalidCredentials'] },
+      timestamp: Date.now(),
+    };
+  }
+}
+
+
+export async function handleAdminLogout() {
+  cookies().delete('admin-session');
+  redirect('/admin/login');
+}
+
+
+// Blog Post Creation
+const CreatePostSchema = z.object({
+  title: z.string().min(5, { message: 'validationMinChars|{"count":5}' }).max(150, { message: 'validationMaxChars|{"count":150}' }),
+  content: z.string().min(20, { message: 'validationMinChars|{"count":20}' }),
+  author: z.string().optional(),
+  excerpt: z.string().max(300, { message: 'validationMaxChars|{"count":300}' }).optional(),
+});
+
+export interface CreatePostFormState {
+  message: string;
+  errors?: {
+    title?: string[];
+    content?: string[];
+    author?: string[];
+    excerpt?: string[];
+    _form?: string[];
+  };
+  success?: boolean;
+  timestamp: number;
+}
+
+
+export async function handleAddPost(
+  prevState: CreatePostFormState,
+  formData: FormData
+): Promise<CreatePostFormState> {
+  const rawFormData: NewBlogPost = {
+    title: formData.get('title') as string,
+    content: formData.get('content') as string,
+    author: formData.get('author') as string || undefined,
+    excerpt: formData.get('excerpt') as string || undefined,
+  };
+
+  const validatedFields = CreatePostSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+    return {
+      message: 'validationFailedMessage',
+      errors: validatedFields.error.flatten().fieldErrors,
+      timestamp: Date.now(),
+      success: false,
+    };
+  }
+
+  try {
+    await saveNewPost(validatedFields.data);
+    return {
+      message: 'blogPostCreatedSuccess',
+      timestamp: Date.now(),
+      success: true,
+    };
+  } catch (error) {
+    console.error('Blog post creation error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return {
+      message: 'blogPostCreationError',
+      errors: { _form: [`blogPostCreationFailed|{"error":"${errorMessage}"}`] },
+      timestamp: Date.now(),
+      success: false,
+    };
+  }
+}
