@@ -7,10 +7,11 @@ import { findDoctors, type FindDoctorsInput, type FindDoctorsOutput } from '@/ai
 import { findPathologyLabs, type FindPathologyLabsInput, type FindPathologyLabsOutput } from '@/ai/flows/find-pathology-labs-flow';
 import { findHospitals, type FindHospitalsInput, type FindHospitalsOutput } from '@/ai/flows/find-hospitals-flow';
 import { z } from 'zod';
-import type { LanguageCode } from '@/contexts/LanguageContext'; // Import LanguageCode
+import type { LanguageCode } from '@/contexts/LanguageContext';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { addPost as saveNewPost, type NewBlogPost } from '@/lib/blog';
+import { addPost as saveNewPost, deletePost as removePost, type NewBlogPost } from '@/lib/blog';
+import { revalidatePath } from 'next/cache';
 
 
 // Symptom Analysis
@@ -409,6 +410,60 @@ export async function handleAddPost(
     return {
       message: 'blogPostCreationError',
       errors: { _form: [`blogPostCreationFailed|{"error":"${errorMessage}"}`] },
+      timestamp: Date.now(),
+      success: false,
+    };
+  }
+}
+
+// Delete Blog Post Action
+export interface DeletePostFormState {
+  message: string;
+  success?: boolean;
+  timestamp: number;
+  errors?: {
+    _form?: string[];
+  };
+}
+
+export async function handleDeletePost(
+  prevState: DeletePostFormState,
+  formData: FormData
+): Promise<DeletePostFormState> {
+  const postId = formData.get('postId') as string;
+
+  if (!postId) {
+    return {
+      message: 'blogPostErrorIdMissing',
+      timestamp: Date.now(),
+      success: false,
+       errors: { _form: ['blogPostErrorIdMissing'] },
+    };
+  }
+
+  try {
+    const deleted = await removePost(postId);
+    if (deleted) {
+      revalidatePath('/admin/manage-blogs');
+      return {
+        message: 'blogPostDeletedSuccess',
+        timestamp: Date.now(),
+        success: true,
+      };
+    } else {
+      return {
+        message: 'blogPostDeletionErrorNotFound',
+        timestamp: Date.now(),
+        success: false,
+        errors: { _form: ['blogPostDeletionErrorNotFound'] },
+      };
+    }
+  } catch (error) {
+    console.error('Blog post deletion error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return {
+      message: 'blogPostDeletionError',
+      errors: { _form: [`blogPostDeletionFailed|{"error":"${errorMessage}"}`] },
       timestamp: Date.now(),
       success: false,
     };

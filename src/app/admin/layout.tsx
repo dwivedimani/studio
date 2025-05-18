@@ -15,18 +15,25 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { LayoutDashboard, FilePlus2, Newspaper, LogOut, StethoscopeIcon } from 'lucide-react';
+import { LayoutDashboard, FilePlus2, Newspaper, LogOut, StethoscopeIcon, Settings2 } from 'lucide-react'; // Added Settings2 for Manage Blogs
 import { handleAdminLogout } from '@/lib/actions';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Toaster } from "@/components/ui/toaster"; // Import Toaster
+import { Toaster } from "@/components/ui/toaster";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t, language } = useLanguage();
   const pathname = usePathname();
 
   const isActive = (path: string) => pathname === path;
+
+  const getPageTitle = () => {
+    if (pathname === '/admin/dashboard') return t('dashboardTitle');
+    if (pathname === '/admin/create-post') return t('createPostTitle');
+    if (pathname === '/admin/manage-blogs') return t('manageBlogsTitle');
+    return t('adminPanel'); // Default title
+  };
 
   return (
     <SidebarProvider>
@@ -72,13 +79,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname.startsWith('/blogs')} // Example: active if on any public blog page
+                  isActive={isActive('/admin/manage-blogs')}
                   tooltip={{ children: t('manageBlogsTitle'), side: language === 'ar' ? 'left' : 'right' }}
                   className="justify-start"
                 >
-                  {/* Update this link if a dedicated /admin/manage-blogs page is created */}
-                  <Link href="/blogs"> 
-                    <Newspaper />
+                  <Link href="/admin/manage-blogs"> 
+                    <Settings2 /> {/* Changed icon to Settings2 */}
                     <span className="group-data-[collapsible=icon]:hidden">{t('manageBlogsTitle')}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -101,21 +107,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Sidebar>
         <SidebarInset className="flex-1 bg-secondary/30">
           <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-card px-4 sm:px-6">
-             <SidebarTrigger className="md:hidden" /> {/* Only show trigger on smaller screens */}
+             <SidebarTrigger className="md:hidden" />
              <div className="flex-1">
                 <h1 className="text-xl font-semibold text-foreground">
-                    {pathname === '/admin/dashboard' && t('dashboardTitle')}
-                    {pathname === '/admin/create-post' && t('createPostTitle')}
-                    {/* Add other titles dynamically based on pathname if needed */}
+                    {getPageTitle()}
                 </h1>
              </div>
-             {/* Potentially add user profile/settings dropdown here */}
           </header>
           <main className="flex-1 p-4 sm:p-6 overflow-auto">
             {children}
+            <Toaster />
           </main>
         </SidebarInset>
-        <Toaster />
       </div>
     </SidebarProvider>
   );
