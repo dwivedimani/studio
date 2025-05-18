@@ -13,7 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FilePlus2, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'; // LogOut removed
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation'; // No longer needed if redirect logic within this page is not re-added
 
 
 const initialCreatePostState: CreatePostFormState = { message: '', timestamp: 0, success: false };
@@ -30,16 +30,16 @@ function SubmitPublishButton({ pending }: { pending: boolean }) {
 
 export default function CreatePostPage() {
   const { t, language } = useLanguage();
-  const router = useRouter();
+  // const router = useRouter(); // No longer needed if redirect logic within this page is not re-added
   const [state, formAction, pending] = useActionState(handleAddPost, initialCreatePostState);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state.success && state.message === 'blogPostCreatedSuccess') {
       formRef.current?.reset();
-      // router.push('/admin/dashboard'); // Optionally redirect after success
+      // router.push('/admin/dashboard'); // Optionally redirect after success - currently handled by staying on page
     }
-  }, [state.success, state.message, router]);
+  }, [state.success, state.message]); // Removed router from dependencies
 
   const translateError = (errorMsgKey: string): string => {
     if (errorMsgKey.includes('|')) {
