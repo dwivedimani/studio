@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { LayoutDashboard, FilePlus2, Newspaper, LogOut, StethoscopeIcon, Settings2 } from 'lucide-react'; // Added Settings2 for Manage Blogs
+import { LayoutDashboard, FilePlus2, Settings2, LogOut, StethoscopeIcon } from 'lucide-react'; // Ensured Settings2 is here, removed Newspaper if it was conflicting
 import { handleAdminLogout } from '@/lib/actions';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePathname } from 'next/navigation';
@@ -83,8 +83,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   tooltip={{ children: t('manageBlogsTitle'), side: language === 'ar' ? 'left' : 'right' }}
                   className="justify-start"
                 >
-                  <Link href="/admin/manage-blogs"> 
-                    <Settings2 /> {/* Changed icon to Settings2 */}
+                  <Link href="/admin/manage-blogs">
+                    <Settings2 /> {/* Using Settings2 icon */}
                     <span className="group-data-[collapsible=icon]:hidden">{t('manageBlogsTitle')}</span>
                   </Link>
                 </SidebarMenuButton>
@@ -97,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 type="submit"
                 className="w-full justify-start"
                 tooltip={{ children: t('logoutButton'), side: language === 'ar' ? 'left' : 'right' }}
-                variant="ghost" 
+                variant="ghost"
               >
                 <LogOut />
                 <span className="group-data-[collapsible=icon]:hidden">{t('logoutButton')}</span>
