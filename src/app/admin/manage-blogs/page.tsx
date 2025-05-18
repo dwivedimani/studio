@@ -115,11 +115,13 @@ export default function ManageBlogsPage() {
       setIsLoading(true);
       try {
         const fetchedPostsData = await getAllPosts();
-        // Ensure that setPosts always receives an array
-        setPosts(fetchedPostsData || []);
+        // Ensure that setPosts always receives an array, even if getAllPosts somehow returns undefined
+        setPosts(fetchedPostsData || []); 
       } catch (error) {
-        console.error("ManageBlogsPage: Error fetching posts in useEffect:", error);
-        setPosts([]); // Fallback to empty array on error
+        // This catch is for unexpected errors during the fetchPosts execution itself,
+        // getAllPosts() has its own internal error handling.
+        console.error("ManageBlogsPage: Error in fetchPosts useEffect:", error);
+        setPosts([]); // Fallback to empty array on any error
       } finally {
         setIsLoading(false);
       }
@@ -135,7 +137,7 @@ export default function ManageBlogsPage() {
     });
     async function refetchPosts() {
       const fetchedPosts = await getAllPosts();
-      setPosts(fetchedPosts || []); // Also ensure an array here
+      setPosts(fetchedPosts || []); 
     }
     refetchPosts();
   };
@@ -172,9 +174,9 @@ export default function ManageBlogsPage() {
     );
   }
 
-  // Defensive check for posts - this should ideally not be triggered if useEffect is robust
+  // Defensive check for posts
   if (!Array.isArray(posts)) {
-    // This console.error was the source of the reported error log
+    // This state should ideally not be reached if useEffect correctly sets posts to an array.
     console.error("ManageBlogsPage: 'posts' state is not an array after loading. Current value:", posts);
     return (
       <Card className="shadow-lg rounded-xl text-center p-8">
