@@ -1,8 +1,7 @@
 
 'use client';
 
-import React, { useActionState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useActionState } from 'react'; // Removed useEffect and useRouter
 import { handleAdminLogin, type AdminLoginFormState } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,8 +11,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, Loader2, LogIn } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
-import AppHeader from '@/components/medi-seek/AppHeader'; // Optional: for consistent layout
-import AppFooter from '@/components/medi-seek/AppFooter'; // Optional: for consistent layout
+import AppHeader from '@/components/medi-seek/AppHeader'; 
+import AppFooter from '@/components/medi-seek/AppFooter'; 
 
 const initialLoginState: AdminLoginFormState = { message: '', timestamp: 0 };
 
@@ -29,23 +28,35 @@ function SubmitButton({ pending }: { pending: boolean }) {
 
 export default function AdminLoginPage() {
   const { t, language } = useLanguage();
-  const router = useRouter();
+  // No router needed here if redirect happens from server action
   const [state, formAction, pending] = useActionState(handleAdminLogin, initialLoginState);
 
-  useEffect(() => {
-    if (state.message === 'adminLoginSuccess') {
-      // Redirect to a protected admin page, e.g., create post or dashboard
-      router.push('/admin/create-post'); 
-    }
-  }, [state.message, router]);
+  // Removed useEffect for client-side redirect, as server action will handle it.
+  // useEffect(() => {
+  //   if (state.message === 'adminLoginSuccess') {
+  //     router.push('/admin/create-post'); 
+  //   }
+  // }, [state.message, router]);
 
   const translateError = (errorMsgKey: string): string => {
-    return t(errorMsgKey); // Assuming error messages from action are already keys
+    // Assuming error messages from action are already keys or include params
+    if (errorMsgKey.includes('|')) {
+      const parts = errorMsgKey.split('|');
+      const errorKey = parts[0];
+      try {
+        const params = parts[1] ? JSON.parse(parts[1]) : undefined;
+        return t(errorKey, params);
+      } catch (e) { return t(errorKey); }
+    }
+    return t(errorMsgKey);
   };
   
   const usernameErrors = state.errors?.username?.map(translateError).join(', ');
   const passwordErrors = state.errors?.password?.map(translateError).join(', ');
   const formErrors = state.errors?._form?.map(translateError).join(', ');
+  // General message display (e.g., for adminLoginFailed if not using _form errors specifically for that)
+  const generalMessage = state.message && !formErrors && state.message !== 'validationFailedMessage' && state.message !== 'adminLoginSuccess' ? t(state.message) : '';
+
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary/30">
@@ -68,9 +79,10 @@ export default function AdminLoginPage() {
                   required
                   className="mt-1"
                   placeholder={t('usernamePlaceholder')}
+                  aria-describedby={usernameErrors ? "username-error" : undefined}
                 />
                 {usernameErrors && (
-                  <Alert variant="destructive" className="mt-2 text-xs">
+                  <Alert variant="destructive" className="mt-2 text-xs" id="username-error">
                     <AlertCircle className="h-3 w-3" />
                     <AlertDescription>{usernameErrors}</AlertDescription>
                   </Alert>
@@ -85,9 +97,10 @@ export default function AdminLoginPage() {
                   required
                   className="mt-1"
                   placeholder={t('passwordPlaceholder')}
+                  aria-describedby={passwordErrors ? "password-error" : undefined}
                 />
                 {passwordErrors && (
-                   <Alert variant="destructive" className="mt-2 text-xs">
+                   <Alert variant="destructive" className="mt-2 text-xs" id="password-error">
                     <AlertCircle className="h-3 w-3" />
                     <AlertDescription>{passwordErrors}</AlertDescription>
                   </Alert>
@@ -99,6 +112,13 @@ export default function AdminLoginPage() {
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle>{t('loginFailedErrorTitle')}</AlertTitle>
                   <AlertDescription>{formErrors}</AlertDescription>
+                </Alert>
+              )}
+              {generalMessage && !formErrors && ( // Display general error messages if no specific form errors
+                 <Alert variant="destructive" className="mt-1">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>{t('loginFailedErrorTitle')}</AlertTitle>
+                  <AlertDescription>{generalMessage}</AlertDescription>
                 </Alert>
               )}
               <SubmitButton pending={pending} />
