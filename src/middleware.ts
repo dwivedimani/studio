@@ -9,8 +9,8 @@ export function middleware(request: NextRequest) {
   // If trying to access /admin/login
   if (pathname.startsWith('/admin/login')) {
     if (adminSessionCookie?.value === 'true') {
-      // User is logged in, redirect to admin create-post page (or a future dashboard)
-      return NextResponse.redirect(new URL('/admin/create-post', request.url));
+      // User is logged in, redirect to admin dashboard
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
     // User is not logged in, allow access to login page
     return NextResponse.next();

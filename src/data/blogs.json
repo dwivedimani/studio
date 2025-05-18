@@ -1,12 +1,21 @@
 [
   {
-    "id": "1700000000001",
-    "slug": "first-blog-post",
-    "title": "My First Blog Post",
-    "author": "Admin",
-    "date": "2023-11-14T10:00:00.000Z",
-    "content": "This is the content of the very first blog post. Welcome to the blog section! We hope you find the information here useful and engaging. Stay tuned for more updates and articles on various topics related to health and wellness. We will cover a wide range of subjects, from common ailments to preventative care, and provide insights from medical professionals. \n\nOur goal is to empower you with knowledge so you can make informed decisions about your health. Feel free to explore other sections of our application for more personalized assistance.",
-    "excerpt": "Welcome to the blog! This is a short summary of the first post, introducing the blog section and its purpose."
+    "id": "1747551496187",
+    "slug": "testing-blog",
+    "title": "Testing Blog",
+    "author": "Testing",
+    "date": "2025-05-18T06:58:16.188Z",
+    "content": "Testing BlogTesting BlogTesting BlogTesting BlogTesting BlogTesting BlogTesting BlogTesting BlogTesting Blog",
+    "excerpt": "Testing BlogTesting BlogTesting BlogTesting BlogTesting BlogTesting Blog"
+  },
+  {
+    "id": "1700000000003",
+    "slug": "tips-for-healthy-living",
+    "title": "5 Tips for Healthy Living",
+    "author": "Wellness Guru",
+    "date": "2023-11-16T15:00:00.000Z",
+    "content": "Maintaining a healthy lifestyle is crucial for overall well-being. Here are five tips to help you on your journey:\n1. Eat a Balanced Diet: Focus on fruits, vegetables, lean proteins, and whole grains.\n2. Stay Hydrated: Drink plenty of water throughout the day.\n3. Exercise Regularly: Aim for at least 30 minutes of moderate activity most days of the week.\n4. Get Enough Sleep: Adults typically need 7-9 hours of quality sleep per night.\n5. Manage Stress: Practice mindfulness, meditation, or engage in hobbies you enjoy.\n\nSmall, consistent changes can make a big difference in your health!",
+    "excerpt": "Discover five simple yet effective tips for maintaining a healthy lifestyle and improving your overall well-being."
   },
   {
     "id": "1700000000002",
@@ -18,12 +27,12 @@
     "excerpt": "Learn about the common cold, its symptoms, and how to manage it effectively."
   },
   {
-    "id": "1700000000003",
-    "slug": "tips-for-healthy-living",
-    "title": "5 Tips for Healthy Living",
-    "author": "Wellness Guru",
-    "date": "2023-11-16T15:00:00.000Z",
-    "content": "Maintaining a healthy lifestyle is crucial for overall well-being. Here are five tips to help you on your journey:\n1. Eat a Balanced Diet: Focus on fruits, vegetables, lean proteins, and whole grains.\n2. Stay Hydrated: Drink plenty of water throughout the day.\n3. Exercise Regularly: Aim for at least 30 minutes of moderate activity most days of the week.\n4. Get Enough Sleep: Adults typically need 7-9 hours of quality sleep per night.\n5. Manage Stress: Practice mindfulness, meditation, or engage in hobbies you enjoy.\n\nSmall, consistent changes can make a big difference in your health!",
-    "excerpt": "Discover five simple yet effective tips for maintaining a healthy lifestyle and improving your overall well-being."
+    "id": "1700000000001",
+    "slug": "first-blog-post",
+    "title": "My First Blog Post",
+    "author": "Admin",
+    "date": "2023-11-14T10:00:00.000Z",
+    "content": "This is the content of the very first blog post. Welcome to the blog section! We hope you find the information here useful and engaging. Stay tuned for more updates and articles on various topics related to health and wellness. We will cover a wide range of subjects, from common ailments to preventative care, and provide insights from medical professionals. \n\nOur goal is to empower you with knowledge so you can make informed decisions about your health. Feel free to explore other sections of our application for more personalized assistance.",
+    "excerpt": "Welcome to the blog! This is a short summary of the first post, introducing the blog section and its purpose."
   }
 ]

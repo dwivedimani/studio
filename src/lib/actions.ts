@@ -316,7 +316,7 @@ export async function handleAdminLogin(
 
   if (!validatedFields.success) {
     return {
-      message: 'validationFailedMessage', // General validation failure message
+      message: 'validationFailedMessage', 
       errors: validatedFields.error.flatten().fieldErrors,
       timestamp: Date.now(),
     };
@@ -324,12 +324,10 @@ export async function handleAdminLogin(
 
   const { username, password } = validatedFields.data;
 
-  // IMPORTANT: Hardcoded credentials - NOT FOR PRODUCTION
   const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'Adminuser';
   const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Samsung123#_mcn';
 
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    // Set session cookie
     cookies().set('admin-session', 'true', { 
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -337,13 +335,10 @@ export async function handleAdminLogin(
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
-    // Redirect directly from the server action
-    redirect('/admin/create-post'); 
-    // Note: redirect() throws a special error, so code after it (like returning a success state) won't execute.
-    // The page will be navigated away.
+    redirect('/admin/dashboard'); 
   } else {
     return {
-      message: 'adminLoginFailed', // Specific login failure message
+      message: 'adminLoginFailed', 
       errors: { _form: ['adminInvalidCredentials'] },
       timestamp: Date.now(),
     };
