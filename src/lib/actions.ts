@@ -10,7 +10,7 @@ import { z } from 'zod';
 import type { LanguageCode } from '@/contexts/LanguageContext';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { addPost as saveNewPost, deletePost as removePost, type NewBlogPost } from '@/lib/blog';
+import { addPost as saveNewPost, deletePost as removePost, updatePost as saveUpdatedPost, getPostById, type NewBlogPost } from '@/lib/blog';
 import { revalidatePath } from 'next/cache';
 
 
@@ -292,7 +292,7 @@ export async function handleFindHospitals(
 const AdminLoginSchema = z.object({
   username: z.string().min(1, { message: 'adminUsernameRequired' }),
   password: z.string().min(1, { message: 'adminPasswordRequired' }),
-  redirectTo: z.string().optional(), // Add redirectTo
+  redirectTo: z.string().optional(), 
 });
 
 export interface AdminLoginFormState {
@@ -312,7 +312,7 @@ export async function handleAdminLogin(
   const rawFormData = {
     username: formData.get('username'),
     password: formData.get('password'),
-    redirectTo: formData.get('redirectTo'), // Get redirectTo from form
+    redirectTo: formData.get('redirectTo'), 
   };
 
   const validatedFields = AdminLoginSchema.safeParse(rawFormData);
@@ -339,7 +339,6 @@ export async function handleAdminLogin(
       maxAge: 60 * 60 * 24 * 7 // 1 week
     });
 
-    // Redirect to redirectTo if it's a valid admin path, otherwise to dashboard
     if (redirectTo && redirectTo.startsWith('/admin/') && redirectTo !== '/admin/login') {
       redirect(redirectTo);
     } else {
@@ -361,13 +360,19 @@ export async function handleAdminLogout() {
 }
 
 
-// Blog Post Creation
-const CreatePostSchema = z.object({
+// Blog Post Creation & Update
+const PostSchemaBase = z.object({
   title: z.string().min(5, { message: 'validationMinChars|{"count":5}' }).max(150, { message: 'validationMaxChars|{"count":150}' }),
   content: z.string().min(20, { message: 'validationMinChars|{"count":20}' }),
   author: z.string().optional(),
   excerpt: z.string().max(300, { message: 'validationMaxChars|{"count":300}' }).optional(),
 });
+
+const CreatePostSchema = PostSchemaBase;
+const UpdatePostSchema = PostSchemaBase.extend({
+  postId: z.string().min(1, { message: 'validationPostIdRequired' }),
+});
+
 
 export interface CreatePostFormState {
   message: string;
@@ -380,6 +385,11 @@ export interface CreatePostFormState {
   };
   success?: boolean;
   timestamp: number;
+}
+
+export interface UpdatePostFormState extends CreatePostFormState {
+  postId?: string;
+  updatedSlug?: string;
 }
 
 
@@ -407,10 +417,10 @@ export async function handleAddPost(
 
   try {
     await saveNewPost(validatedFields.data);
-    revalidatePath('/admin/manage-blogs'); // Revalidate manage blogs page
-    revalidatePath('/blogs'); // Revalidate public blogs list page
-    // Potentially revalidate individual blog post if slug generation is predictable
-    // or revalidatePath('/blogs/[slug]', 'page') - but this is harder without knowing the slug
+    revalidatePath('/admin/manage-blogs'); 
+    revalidatePath('/blogs'); 
+    revalidatePath('/blogs', 'layout'); // Revalidate the blog list page and its layout
+
     return {
       message: 'blogPostCreatedSuccess',
       timestamp: Date.now(),
@@ -427,6 +437,93 @@ export async function handleAddPost(
     };
   }
 }
+
+export async function handleUpdatePost(
+  prevState: UpdatePostFormState,
+  formData: FormData
+): Promise<UpdatePostFormState> {
+  const rawFormData = {
+    postId: formData.get('postId') as string,
+    title: formData.get('title') as string,
+    content: formData.get('content') as string,
+    author: formData.get('author') as string || undefined,
+    excerpt: formData.get('excerpt') as string || undefined,
+  };
+
+  const validatedFields = UpdatePostSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+    return {
+      message: 'validationFailedMessage',
+      errors: validatedFields.error.flatten().fieldErrors,
+      timestamp: Date.now(),
+      success: false,
+      postId: rawFormData.postId,
+    };
+  }
+  
+  const { postId, ...dataToUpdate } = validatedFields.data;
+
+  try {
+    const originalPost = await getPostById(postId);
+    if (!originalPost) {
+       return {
+        message: 'blogPostUpdateErrorNotFound',
+        errors: { _form: ['blogPostUpdateErrorNotFound'] },
+        timestamp: Date.now(),
+        success: false,
+        postId: postId,
+      };
+    }
+
+    const updatedPost = await saveUpdatedPost(postId, dataToUpdate);
+    if (!updatedPost) {
+      // This case might occur if saveUpdatedPost returns null on failure (e.g., post not found, which we checked)
+      return {
+        message: 'blogPostUpdateError',
+        errors: { _form: ['blogPostUpdateFailed|{"error":"Post could not be updated."}'] },
+        timestamp: Date.now(),
+        success: false,
+        postId: postId,
+      };
+    }
+
+    // Revalidate paths
+    revalidatePath('/admin/manage-blogs');
+    revalidatePath('/blogs');
+    revalidatePath(`/blogs/${originalPost.slug}`); // Revalidate old slug path
+    if (updatedPost.slug !== originalPost.slug) {
+      revalidatePath(`/blogs/${updatedPost.slug}`); // Revalidate new slug path if changed
+    }
+    revalidatePath(`/admin/edit-post/${updatedPost.slug}`);
+
+
+    // If the slug changed, we want to redirect to the new slug's edit page or manage page
+    // For simplicity, let's redirect to manage-blogs after update.
+    // Or, provide the new slug back to the form to potentially redirect client-side if needed.
+    // For now, a success message and remaining on the page is fine.
+    // To redirect, uncomment: redirect('/admin/manage-blogs');
+
+    return {
+      message: 'blogPostUpdatedSuccess',
+      timestamp: Date.now(),
+      success: true,
+      postId: postId,
+      updatedSlug: updatedPost.slug, // Send back the potentially new slug
+    };
+  } catch (error) {
+    console.error('Blog post update error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return {
+      message: 'blogPostUpdateError',
+      errors: { _form: [`blogPostUpdateFailed|{"error":"${errorMessage}"}`] },
+      timestamp: Date.now(),
+      success: false,
+      postId: postId,
+    };
+  }
+}
+
 
 // Delete Blog Post Action
 export interface DeletePostFormState {
@@ -454,10 +551,16 @@ export async function handleDeletePost(
   }
 
   try {
+    // Fetch post before deleting to revalidate its path
+    const postToDelete = await getPostById(postId);
+
     const deleted = await removePost(postId);
     if (deleted) {
       revalidatePath('/admin/manage-blogs');
       revalidatePath('/blogs');
+      if (postToDelete) {
+        revalidatePath(`/blogs/${postToDelete.slug}`);
+      }
       return {
         message: 'blogPostDeletedSuccess',
         timestamp: Date.now(),
@@ -482,3 +585,4 @@ export async function handleDeletePost(
     };
   }
 }
+

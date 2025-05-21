@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { LayoutDashboard, FilePlus2, Settings2, LogOut, StethoscopeIcon } from 'lucide-react'; // Ensured Settings2 is here, removed Newspaper if it was conflicting
+import { LayoutDashboard, FilePlus2, Settings2, LogOut, StethoscopeIcon, Edit3 } from 'lucide-react';
 import { handleAdminLogout } from '@/lib/actions';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePathname } from 'next/navigation';
@@ -26,12 +26,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { t, language } = useLanguage();
   const pathname = usePathname();
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname === path || (path.endsWith('/') ? pathname.startsWith(path) : pathname.startsWith(path + '/'));
+
 
   const getPageTitle = () => {
     if (pathname === '/admin/dashboard') return t('dashboardTitle');
     if (pathname === '/admin/create-post') return t('createPostTitle');
     if (pathname === '/admin/manage-blogs') return t('manageBlogsTitle');
+    if (pathname.startsWith('/admin/edit-post/')) return t('editPostTitlePage');
     return t('adminPanel'); // Default title
   };
 
@@ -84,11 +86,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   className="justify-start"
                 >
                   <Link href="/admin/manage-blogs">
-                    <Settings2 /> {/* Using Settings2 icon */}
+                    <Settings2 /> 
                     <span className="group-data-[collapsible=icon]:hidden">{t('manageBlogsTitle')}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+               {/* Edit post link is not directly in sidebar, but contextually shown */}
+               {pathname.startsWith('/admin/edit-post/') && (
+                 <SidebarMenuItem>
+                    <SidebarMenuButton
+                    asChild
+                    isActive={true} // Always active when on an edit page
+                    tooltip={{ children: t('editPostTitlePage'), side: language === 'ar' ? 'left' : 'right' }}
+                    className="justify-start bg-accent/20" // Visually distinct or just active
+                    >
+                    <Link href={pathname}> {/* Links to current path to "stay" */}
+                        <Edit3 />
+                        <span className="group-data-[collapsible=icon]:hidden">{t('editPostTitlePage')}</span>
+                    </Link>
+                    </SidebarMenuButton>
+                 </SidebarMenuItem>
+               )}
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="p-2 mt-auto border-t border-border">
@@ -123,3 +141,4 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </SidebarProvider>
   );
 }
+

@@ -7,7 +7,7 @@ import type { BlogPost, NewBlogPost } from '@/types/blog';
 
 const dataFilePath = path.join(process.cwd(), 'src', 'data', 'blogs.json');
 
-// Made generateSlug a local helper function, not exported
+// Local helper function, not exported
 function generateSlug(title: string): string {
   return title
     .toLowerCase()
@@ -39,6 +39,16 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | undefined>
   }
 }
 
+export async function getPostById(id: string): Promise<BlogPost | undefined> {
+  try {
+    const posts = await getAllPosts();
+    return posts.find(post => post.id === id);
+  } catch (error) {
+    console.error(`Failed to get post by ID ${id}:`, error);
+    return undefined;
+  }
+}
+
 export async function addPost(newPostData: NewBlogPost): Promise<BlogPost> {
   const posts = await getAllPosts();
   const newPost: BlogPost = {
@@ -53,13 +63,14 @@ export async function addPost(newPostData: NewBlogPost): Promise<BlogPost> {
 
   let potentialSlug = newPost.slug;
   let counter = 1;
+  // Ensure slug uniqueness for new posts
   while (posts.some(post => post.slug === potentialSlug)) {
-    potentialSlug = `${newPost.slug}-${counter}`;
+    potentialSlug = `${generateSlug(newPostData.title)}-${counter}`;
     counter++;
   }
   newPost.slug = potentialSlug;
 
-  posts.unshift(newPost);
+  posts.unshift(newPost); // Add to the beginning to keep it sorted by recent
 
   try {
     await fs.writeFile(dataFilePath, JSON.stringify(posts, null, 2), 'utf-8');
@@ -70,13 +81,58 @@ export async function addPost(newPostData: NewBlogPost): Promise<BlogPost> {
   }
 }
 
+export async function updatePost(postId: string, dataToUpdate: NewBlogPost): Promise<BlogPost | null> {
+  const posts = await getAllPosts();
+  const postIndex = posts.findIndex(post => post.id === postId);
+
+  if (postIndex === -1) {
+    console.error(`Post with ID ${postId} not found for update.`);
+    return null; // Or throw an error
+  }
+
+  const originalPost = posts[postIndex];
+  const updatedPost = { ...originalPost, ...dataToUpdate };
+
+  // If title changed, regenerate slug and ensure uniqueness
+  if (dataToUpdate.title && dataToUpdate.title !== originalPost.title) {
+    let newSlug = generateSlug(dataToUpdate.title);
+    let counter = 1;
+    // Ensure new slug is unique among OTHER posts
+    while (posts.some(p => p.slug === newSlug && p.id !== postId)) {
+      newSlug = `${generateSlug(dataToUpdate.title)}-${counter}`;
+      counter++;
+    }
+    updatedPost.slug = newSlug;
+  }
+  
+  // Update excerpt if not provided or if content changed
+  if (dataToUpdate.content || !dataToUpdate.excerpt) {
+      updatedPost.excerpt = dataToUpdate.excerpt || dataToUpdate.content.substring(0,150) + (dataToUpdate.content.length > 150 ? '...' : '');
+  }
+  
+  // Ensure author is set
+  updatedPost.author = dataToUpdate.author || originalPost.author || 'Admin';
+
+
+  posts[postIndex] = updatedPost;
+  // No need to re-sort here if we are just updating, date doesn't change unless explicitly updated
+
+  try {
+    await fs.writeFile(dataFilePath, JSON.stringify(posts, null, 2), 'utf-8');
+    return updatedPost;
+  } catch (error) {
+    console.error(`Failed to write updated blog post (ID: ${postId}):`, error);
+    throw new Error('Could not update the blog post.');
+  }
+}
+
+
 export async function deletePost(postId: string): Promise<boolean> {
   let posts = await getAllPosts();
   const initialLength = posts.length;
   posts = posts.filter(post => post.id !== postId);
 
   if (posts.length === initialLength) {
-    // Post not found, or already deleted
     console.warn(`Post with ID ${postId} not found for deletion.`);
     return false;
   }
@@ -84,7 +140,6 @@ export async function deletePost(postId: string): Promise<boolean> {
   try {
     console.log(`Attempting to write updated posts to: ${dataFilePath}`);
     const dataToWrite = JSON.stringify(posts, null, 2);
-    // Log a snippet of data to avoid overly long console messages if there are many posts
     console.log(`Data to write snippet (${posts.length} posts, first ~500 chars): ${dataToWrite.substring(0, 500)}${dataToWrite.length > 500 ? '...' : ''}`);
     
     await fs.writeFile(dataFilePath, dataToWrite, 'utf-8');
