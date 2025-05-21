@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { AnalyzeSymptomsOutput } from '@/ai/flows/analyze-symptoms';
-import { AlertTriangle, Pill, UserCheck, Beaker, FileQuestion } from 'lucide-react';
+import { AlertTriangle, Pill, UserCheck, Beaker, FileQuestion, Apple } from 'lucide-react'; // Added Apple icon
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 
@@ -56,8 +56,8 @@ export default function MedicineDisplay({ analysis }: MedicineDisplayProps) {
                   <h5 className="font-semibold text-lg text-accent">{medicine.name}</h5>
                 </div>
                 <p className={cn("text-sm text-muted-foreground", language === 'ar' ? "mr-8" : "ml-8")}>
-                  {t('suggestedDosageLabel')} 
-                  <span className="text-foreground font-medium">{medicine.dosage}</span> 
+                  {t('suggestedDosageLabel')}
+                  <span className="text-foreground font-medium">{medicine.dosage}</span>
                 </p>
               </li>
             ))}
@@ -69,6 +69,21 @@ export default function MedicineDisplay({ analysis }: MedicineDisplayProps) {
           <p className="text-lg font-semibold text-primary-foreground">{t('noMedicineSuggestionsTitle')}</p>
           <p className="text-sm text-foreground/80 mt-2">
             {t('noMedicineSuggestionsInfo')}
+          </p>
+        </div>
+      )}
+
+      {analysis.suggestedDietPlan && (
+        <div className="p-6 bg-green-50 border-l-4 rtl:border-l-0 rtl:border-r-4 border-green-500 rounded-lg shadow-lg">
+           <h3 className="text-xl font-bold text-green-700 mb-3 flex items-center">
+            <Apple className={cn("h-6 w-6 text-green-600", language === 'ar' ? "ml-2" : "mr-2")} />
+            {t('suggestedDietPlanTitle')}
+          </h3>
+          <p className="text-sm text-green-800 whitespace-pre-line">
+            {analysis.suggestedDietPlan}
+          </p>
+          <p className="text-xs text-green-600 mt-3">
+            {t('suggestedDietPlanDisclaimer')}
           </p>
         </div>
       )}
