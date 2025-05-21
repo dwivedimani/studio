@@ -11,7 +11,7 @@ import { FileText, CalendarDays, UserCircle, Edit3, Trash2, AlertCircle, CheckCi
 import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { handleDeletePost, type DeletePostFormState } from '@/lib/actions';
-import { useActionState } from 'react-dom';
+import { useActionState } from 'react'; // Changed from 'react-dom'
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -211,3 +211,4 @@ export default function ManageBlogsPage() {
     </div>
   );
 }
+
