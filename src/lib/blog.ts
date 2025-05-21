@@ -59,7 +59,7 @@ export async function addPost(newPostData: NewBlogPost): Promise<BlogPost> {
   }
   newPost.slug = potentialSlug;
 
-  posts.unshift(newPost); 
+  posts.unshift(newPost);
 
   try {
     await fs.writeFile(dataFilePath, JSON.stringify(posts, null, 2), 'utf-8');
@@ -77,14 +77,22 @@ export async function deletePost(postId: string): Promise<boolean> {
 
   if (posts.length === initialLength) {
     // Post not found, or already deleted
-    return false; 
+    console.warn(`Post with ID ${postId} not found for deletion.`);
+    return false;
   }
 
   try {
-    await fs.writeFile(dataFilePath, JSON.stringify(posts, null, 2), 'utf-8');
+    console.log(`Attempting to write updated posts to: ${dataFilePath}`);
+    const dataToWrite = JSON.stringify(posts, null, 2);
+    // Log a snippet of data to avoid overly long console messages if there are many posts
+    console.log(`Data to write snippet (${posts.length} posts, first ~500 chars): ${dataToWrite.substring(0, 500)}${dataToWrite.length > 500 ? '...' : ''}`);
+    
+    await fs.writeFile(dataFilePath, dataToWrite, 'utf-8');
+    console.log(`Successfully wrote updated posts to: ${dataFilePath}`);
     return true;
   } catch (error) {
-    console.error('Failed to delete blog post:', error);
-    throw new Error('Could not delete the blog post.');
+    const underlyingErrorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`Failed to write updated posts to ${dataFilePath}. Underlying error:`, underlyingErrorMessage, error);
+    throw new Error(`Could not write to blog data file. Path: ${dataFilePath}. Details: ${underlyingErrorMessage}`);
   }
 }
