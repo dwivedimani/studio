@@ -1,6 +1,6 @@
 
 export interface BlogPost {
-  id: string;
+  id: string; // This will be the string representation of MongoDB's _id
   slug: string;
   title: string;
   author: string;
