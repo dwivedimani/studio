@@ -27,6 +27,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 // For generating static paths if you choose to pre-render blog posts
 export async function generateStaticParams() {
   const posts = await getAllPosts();
+  if (!Array.isArray(posts)) {
+      console.warn('generateStaticParams: getAllPosts did not return an array, returning empty array for params.');
+      return [];
+  }
   return posts.map((post) => ({
     slug: post.slug,
   }));
@@ -40,9 +44,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   if (!post) {
     notFound(); // Triggers the not-found.tsx page or a default Next.js 404 page
   }
-
-  // Split content by newlines to render paragraphs
-  const contentParagraphs = post.content.split('\\n').filter(p => p.trim() !== '');
 
   return (
     <div className="flex flex-col min-h-screen bg-secondary/30">
@@ -69,9 +70,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             </div>
           </CardHeader>
           <CardContent className="p-6 sm:p-8 prose prose-sm sm:prose-base lg:prose-lg max-w-none text-foreground">
-            {contentParagraphs.map((paragraph, index) => (
-              <p key={index} className="mb-4 last:mb-0">{paragraph}</p>
-            ))}
+            {/* Render HTML content */}
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
           </CardContent>
         </Card>
       </main>
